@@ -112,3 +112,39 @@ main {
     height: clamp(150px, 42vh, 260px);
   }
 }
+@media (min-width: 761px) {
+  .hero-grid {
+    min-height: min(590px, calc(100svh - 250px));
+    padding: clamp(24px, 5vh, 70px) 0 clamp(24px, 4vh, 54px);
+  }
+
+  .portrait-placeholder {
+    height: clamp(150px, 31vh, 300px);
+  }
+
+  .home-strip {
+    padding: clamp(10px, 2vh, 20px) 0;
+  }
+}
+
+@media (max-height: 700px) and (min-width: 761px) {
+  .hero-grid {
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 5%;
+  }
+
+  .hero-copy h1 {
+    font-size: clamp(40px, 5vw, 64px);
+    margin-bottom: 16px;
+  }
+
+  .hero-lead {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .hero-meta {
+    margin-top: 24px;
+  }
+}
+
