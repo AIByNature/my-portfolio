@@ -1,0 +1,114 @@
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow-x: hidden;
+}
+
+.site-shell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1800px;
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+main {
+  flex: 1;
+  min-height: 0;
+}
+
+.page {
+  min-height: calc(100svh - 170px);
+}
+
+.hero-grid {
+  min-height: min(590px, calc(100svh - 170px));
+}
+
+.hero-grid > *,
+.about-grid > *,
+.skills-grid > *,
+.projects-grid > *,
+.contact-layout > * {
+  min-width: 0;
+}
+
+.contact-row a {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 760px) {
+  .site-shell {
+    padding: 0 5%;
+  }
+
+  .topbar {
+    position: relative;
+    flex-wrap: wrap;
+    padding: 17px 0;
+  }
+
+  .menu-toggle {
+    display: block;
+  }
+
+  .nav-tabs {
+    display: none;
+    flex-basis: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .nav-tabs.open {
+    display: grid;
+  }
+
+  .nav-tab {
+    min-width: 0;
+    padding: 10px 4px;
+  }
+
+  .page {
+    min-height: calc(100svh - 150px);
+  }
+
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 35px;
+    min-height: 0;
+    padding: 48px 0 35px;
+  }
+
+  .hero-art {
+    justify-self: center;
+    width: min(100%, 380px);
+  }
+}
+
+@media (max-width: 420px) {
+  .hero-actions > button {
+    width: 100%;
+  }
+
+  .hero-meta {
+    flex-wrap: wrap;
+    font-size: 9px;
+  }
+}
+
+@media (max-height: 520px) and (min-width: 761px) {
+  .hero-grid {
+    min-height: 0;
+    padding: 24px 0;
+  }
+
+  .portrait-placeholder {
+    height: clamp(150px, 42vh, 260px);
+  }
+}
