@@ -148,3 +148,83 @@ main {
   }
 }
 
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background .2s, color .2s, border-color .2s;
+}
+
+.theme-toggle:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--olive2);
+  outline-offset: 3px;
+}
+
+.theme-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ink: #eee9dc;
+  --muted: #b2b4a8;
+  --paper: #20231e;
+  --white: #f8f5ec;
+  --line: rgba(238, 233, 220, .18);
+}
+
+:root[data-theme="dark"] .nav-tab {
+  color: #c2c3b8;
+}
+
+:root[data-theme="dark"] .nav-tab:hover,
+:root[data-theme="dark"] .nav-tab.active {
+  background: #eee9dc;
+  color: #20231e;
+}
+
+:root[data-theme="dark"] .skill-card,
+:root[data-theme="dark"] .project-card,
+:root[data-theme="dark"] .contact-card {
+  background: #292d26;
+}
+
+:root[data-theme="dark"] .about-copy p,
+:root[data-theme="dark"] .timeline-content p,
+:root[data-theme="dark"] .project-info p,
+:root[data-theme="dark"] .skill-card p {
+  color: #c0c2b6;
+}
+
+:root[data-theme="dark"] .tags span {
+  color: #d3d3c8;
+}
+
+:root[data-theme="dark"] .nav-tab.active {
+  color: #20231e;
+}
+
+@media (max-width: 760px) {
+  .theme-toggle {
+    margin-left: auto;
+  }
+
+  .nav-tabs.open + .theme-toggle {
+    margin-left: 0;
+  }
+}
+
