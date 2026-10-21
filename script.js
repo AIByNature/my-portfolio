@@ -23,8 +23,9 @@ function showPage(pageId) {
   const target = document.getElementById(pageId);
   if (!target) return;
   pages.forEach(page => page.classList.toggle("active", page.id === pageId));
+  const navPageId = pageId === "ojt-gallery" ? "ojt" : pageId;
   tabs.forEach(tab => {
-    const active = tab.dataset.page === pageId;
+    const active = tab.dataset.page === navPageId;
     tab.classList.toggle("active", active);
     tab.setAttribute("aria-current", active ? "page" : "false");
   });
