@@ -37,6 +37,13 @@
     .filter(number => !seenDutyNumbers.has(number));
 
   function parseDate(value) {
+    const source = String(value ?? "");
+    const sourceDate = source.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/);
+    if (sourceDate) {
+      const year = Number(sourceDate[3]) + (sourceDate[3].length === 2 ? 2000 : 0);
+      const date = new Date(Date.UTC(year, Number(sourceDate[1]) - 1, Number(sourceDate[2])));
+      return date.getUTCFullYear() === year && date.getUTCMonth() === Number(sourceDate[1]) - 1 && date.getUTCDate() === Number(sourceDate[2]) ? date : null;
+    }
     const date = new Date(value);
     return Number.isNaN(date.valueOf()) ? null : date;
   }
@@ -56,7 +63,10 @@
     const query = attendanceSearch.value.trim().toLowerCase();
     const month = monthFilter.value;
     return records.filter(record => {
-      const matchesSearch = !query || String(record.dutyNumber ?? "").toLowerCase().includes(query) || String(record.date ?? "").toLowerCase().includes(query);
+      const date = parseDate(record.date);
+      const longDate = date ? date.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" }) : "";
+      const dateSearch = `${record.date ?? ""} ${readableDate(record.date)} ${longDate}`.toLowerCase();
+      const matchesSearch = !query || String(record.dutyNumber ?? "").toLowerCase().includes(query) || dateSearch.includes(query);
       const matchesMonth = month === "all" || rowMonth(record) === month;
       return matchesSearch && matchesMonth;
     });
