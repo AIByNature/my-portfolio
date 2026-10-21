@@ -388,6 +388,14 @@ body.nav-open {
   cursor: pointer;
 }
 
+.menu-toggle[aria-expanded="true"] {
+  position: fixed;
+  top: calc(18px + env(safe-area-inset-top, 0px));
+  right: calc(18px + env(safe-area-inset-right, 0px));
+  background: var(--paper);
+  box-shadow: 0 3px 12px rgba(41, 43, 37, .08);
+}
+
 .menu-toggle span {
   display: block;
   width: 18px;
