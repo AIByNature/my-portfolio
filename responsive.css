@@ -229,18 +229,20 @@ main {
 
 .carousel-slide.is-previous {
   z-index: 1;
-  transform: translateX(-78%) scale(.84);
+  opacity: .55;
+  transform: translate(-8px, -8px) scale(.96);
 }
 
 .carousel-slide.is-next {
   z-index: 1;
-  transform: translateX(78%) scale(.84);
+  opacity: .72;
+  transform: translate(10px, 10px) scale(.96);
 }
 
 .carousel-slide.is-hidden {
   z-index: 0;
   opacity: 0;
-  transform: translateX(120%) scale(.78);
+  transform: translate(18px, 18px) scale(.92);
 }
 
 .profile-image {
@@ -250,8 +252,14 @@ main {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  opacity: 0;
   pointer-events: none;
   -webkit-user-drag: none;
+  transition: opacity .24s ease;
+}
+
+.profile-image.is-loaded {
+  opacity: 1;
 }
 
 .carousel-slide:not(.is-placeholder) .portrait-initials {
@@ -334,6 +342,19 @@ main {
 .carousel-dot:focus-visible {
   outline: 2px solid var(--white);
   outline-offset: 3px;
+}
+
+.profile-description {
+  display: block;
+  max-width: 260px;
+  margin-top: 3px;
+  color: rgba(248, 245, 236, .72);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.profile-description[hidden] {
+  display: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

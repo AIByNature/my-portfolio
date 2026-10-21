@@ -22,23 +22,25 @@ tabs.forEach(tab => tab.addEventListener("click", () => showPage(tab.dataset.pag
 document.querySelectorAll("[data-go]").forEach(button => button.addEventListener("click", () => showPage(button.dataset.go)));
 
 // Add, remove, or replace profile image paths and alt text here.
-const profileImages = [
-  { src: "assets/profile-1.jpg", alt: "Profile photo 1" },
-  { src: "assets/profile-2.jpg", alt: "Profile photo 2" },
-  { src: "assets/profile-3.jpg", alt: "Profile photo 3" },
-  { src: "assets/profile-4.jpg", alt: "Profile photo 4" },
-  { src: "assets/profile-5.jpg", alt: "Profile photo 5" },
-  { src: "assets/profile-6.jpg", alt: "Profile photo 6" }
+const profileCards = [
+  { src: "assets/profile-1.jpg", alt: "Profile photo 1", role: "IT Student · Multimedia", description: "" },
+  { src: "assets/profile-2.jpg", alt: "Profile photo 2", role: "IT Student · Multimedia", description: "" },
+  { src: "assets/profile-3.jpg", alt: "Profile photo 3", role: "IT Student · Multimedia", description: "" },
+  { src: "assets/profile-4.jpg", alt: "Profile photo 4", role: "IT Student · Multimedia", description: "" },
+  { src: "assets/profile-5.jpg", alt: "Profile photo 5", role: "IT Student · Multimedia", description: "" },
+  { src: "assets/profile-6.jpg", alt: "Profile photo 6", role: "IT Student · Multimedia", description: "" }
 ];
 const profileCarousel = document.getElementById("profileCarousel");
 const profileCounter = document.getElementById("profileCounter");
 const profileTrack = document.getElementById("profileTrack");
 const profilePagination = document.getElementById("profilePagination");
-let currentProfileImage = 0;
+const profileRole = document.getElementById("profileRole");
+const profileDescription = document.getElementById("profileDescription");
+let currentProfileCard = 0;
 let dragStartX = null;
 let dragged = false;
 
-function createProfileSlide(photo, index) {
+function createProfileSlide(card, index) {
   const slide = document.createElement("div");
   slide.className = "carousel-slide is-placeholder";
   slide.setAttribute("aria-hidden", "true");
@@ -48,21 +50,27 @@ function createProfileSlide(photo, index) {
   placeholder.innerHTML = "YOUR<br>PHOTO";
   slide.append(placeholder);
 
-  if (photo?.src) {
+  if (card?.src) {
     const image = document.createElement("img");
     image.className = "profile-image";
-    image.src = photo.src;
-    image.alt = photo.alt || `Profile photo ${index + 1}`;
+    image.src = card.src;
+    image.alt = card.alt || `Profile photo ${index + 1}`;
     image.draggable = false;
-    image.addEventListener("load", () => slide.classList.remove("is-placeholder"));
-    image.addEventListener("error", () => slide.classList.add("is-placeholder"));
+    image.addEventListener("load", () => {
+      image.classList.add("is-loaded");
+      slide.classList.remove("is-placeholder");
+    });
+    image.addEventListener("error", () => {
+      image.hidden = true;
+      slide.classList.add("is-placeholder");
+    });
     slide.prepend(image);
   }
   return slide;
 }
 
-function renderProfileCarousel(index, direction = 1) {
-  const count = profileImages.length;
+function renderProfileCarousel(index) {
+  const count = profileCards.length;
   if (!count) {
     profileCounter.textContent = "00 / 00";
     if (!profileTrack.children.length) profileTrack.append(createProfileSlide(null, 0));
@@ -70,37 +78,40 @@ function renderProfileCarousel(index, direction = 1) {
     return;
   }
 
-  currentProfileImage = (index + count) % count;
-  profileCounter.textContent = `${String(currentProfileImage + 1).padStart(2, "0")} / ${String(count).padStart(2, "0")}`;
+  currentProfileCard = (index + count) % count;
+  const activeCard = profileCards[currentProfileCard];
+  profileCounter.textContent = `${String(currentProfileCard + 1).padStart(2, "0")} / ${String(count).padStart(2, "0")}`;
+  profileRole.textContent = activeCard.role || "IT Student · Multimedia";
+  profileDescription.textContent = activeCard.description || "";
+  profileDescription.hidden = !activeCard.description;
   if (profileTrack.children.length !== count) {
-    profileTrack.replaceChildren(...profileImages.map(createProfileSlide));
+    profileTrack.replaceChildren(...profileCards.map(createProfileSlide));
   }
   [...profileTrack.children].forEach((slide, slideIndex) => {
-    const previous = (currentProfileImage - 1 + count) % count;
-    const next = (currentProfileImage + 1) % count;
-    const position = slideIndex === currentProfileImage ? "active" : slideIndex === previous ? "previous" : slideIndex === next ? "next" : "hidden";
+    const previous = (currentProfileCard - 1 + count) % count;
+    const next = (currentProfileCard + 1) % count;
+    const position = slideIndex === currentProfileCard ? "active" : slideIndex === previous ? "previous" : slideIndex === next ? "next" : "hidden";
     slide.classList.remove("is-active", "is-previous", "is-next", "is-hidden");
     slide.classList.add(`is-${position}`);
-    slide.dataset.direction = String(direction);
     slide.setAttribute("aria-hidden", String(position !== "active"));
   });
   [...profilePagination.children].forEach((dot, dotIndex) => {
-    dot.setAttribute("aria-current", String(dotIndex === currentProfileImage));
-    dot.classList.toggle("is-active", dotIndex === currentProfileImage);
+    dot.setAttribute("aria-current", String(dotIndex === currentProfileCard));
+    dot.classList.toggle("is-active", dotIndex === currentProfileCard);
   });
 }
 
 function moveProfileCarousel(step) {
-  renderProfileCarousel(currentProfileImage + step, Math.sign(step));
+  renderProfileCarousel(currentProfileCard + step);
 }
 
 function buildProfilePagination() {
-  profilePagination.replaceChildren(...profileImages.map((photo, index) => {
+  profilePagination.replaceChildren(...profileCards.map((card, index) => {
     const dot = document.createElement("button");
     dot.type = "button";
     dot.className = "carousel-dot";
     dot.setAttribute("aria-label", `Show profile photo ${index + 1}`);
-    dot.addEventListener("click", () => renderProfileCarousel(index, Math.sign(index - currentProfileImage) || 1));
+    dot.addEventListener("click", () => renderProfileCarousel(index));
     return dot;
   }));
 }
