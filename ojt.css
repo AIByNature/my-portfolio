@@ -568,20 +568,26 @@
   .ojt-polaroid,.ojt-lightbox,.ojt-lightbox::backdrop,.ojt-lightbox-close,.ojt-lightbox-arrow,.ojt-gallery-back { transition: none; }
 }
 
-/* Keep the activity summaries compact within the OJT page. */
+/* Horizontal, continuously looping activity carousel. */
 .ojt-activity-grid {
-  height: clamp(190px, 34vh, 260px);
-  overflow-x: hidden;
-  overflow-y: auto;
-  grid-template-columns: minmax(0, 1fr);
-  grid-auto-rows: 100%;
-  align-content: start;
+  --activity-gap: 12px;
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-columns: none;
+  grid-template-rows: minmax(0, 1fr);
+  grid-auto-columns: calc((100% - 2 * var(--activity-gap)) / 3);
+  gap: var(--activity-gap);
+  height: 250px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  align-content: stretch;
   padding: 3px 8px 3px 3px;
-  overscroll-behavior-y: contain;
-  scroll-padding-block: 8px;
-  scroll-snap-type: y mandatory;
+  overscroll-behavior-x: contain;
+  scroll-padding-inline: 3px;
+  scroll-snap-type: x mandatory;
   scrollbar-width: thin;
   scrollbar-color: var(--olive2) transparent;
+  touch-action: pan-x;
 }
 
 .ojt-activity-grid > .ojt-local-activity {
@@ -598,7 +604,7 @@
   outline-offset: 2px;
 }
 
-.ojt-activity-grid::-webkit-scrollbar { width: 8px; }
+.ojt-activity-grid::-webkit-scrollbar { height: 8px; }
 .ojt-activity-grid::-webkit-scrollbar-track { background: transparent; }
 .ojt-activity-grid::-webkit-scrollbar-thumb {
   border: 2px solid transparent;
@@ -608,5 +614,13 @@
 }
 
 @media (max-width: 650px) {
-  .ojt-activity-grid { height: clamp(190px, 38vh, 300px); }
+  .ojt-activity-grid { --activity-gap: 10px; grid-auto-columns: 100%; height: 230px; }
+}
+
+@media (min-width: 651px) and (max-width: 900px) {
+  .ojt-activity-grid { --activity-gap: 10px; grid-auto-columns: calc((100% - var(--activity-gap)) / 2); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ojt-activity-grid { scroll-behavior: auto; }
 }
