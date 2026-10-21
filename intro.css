@@ -1,0 +1,68 @@
+html.intro-pending.intro-ready,
+html.intro-pending.intro-ready body { overflow: hidden; }
+
+.intro-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 30000;
+  display: none;
+  place-items: center;
+  overflow: hidden;
+  background-color: var(--paper);
+  background-image: radial-gradient(ellipse at 50% 48%, rgba(255,255,255,.35), transparent 66%), repeating-linear-gradient(0deg, transparent 0 4px, rgba(92,64,51,.018) 4px 5px);
+  color: var(--ink);
+  opacity: 1;
+  transition: opacity .52s ease;
+}
+
+html.intro-pending.intro-ready .intro-screen { display: grid; }
+html.intro-seen .intro-screen { display: none; }
+.intro-screen.is-leaving { opacity: 0; pointer-events: none; }
+.intro-content { position: relative; z-index: 2; display: grid; justify-items: center; width: min(90vw, 620px); text-align: center; }
+.intro-overline { margin: 0 0 24px; color: var(--olive); font: 9px var(--mono); letter-spacing: .2em; }
+.intro-instruction { margin: 28px 0 1px; color: var(--ink); font: 500 clamp(21px, 3vw, 28px)/1.3 var(--serif); }
+.intro-hint { margin: 5px 0 0; color: var(--muted); font: 9px var(--mono); letter-spacing: .06em; }
+.intro-skip { margin-top: 26px; padding: 7px 12px; border: 1px solid var(--line); background: transparent; color: var(--muted); font: 9px var(--mono); letter-spacing: .08em; cursor: pointer; transition: color .2s ease, border-color .2s ease, background .2s ease; }
+.intro-skip:hover { border-color: var(--olive); background: rgba(85,107,47,.08); color: var(--olive); }
+.intro-skip:focus-visible,.virtual-envelope:focus-visible { outline: 2px solid var(--olive2); outline-offset: 5px; }
+
+.virtual-envelope { position: relative; display: block; width: min(82vw, 480px); aspect-ratio: 1.62; padding: 0; border: 0; background: transparent; cursor: pointer; perspective: 900px; }
+.virtual-envelope:disabled { cursor: default; }
+.envelope-shell { position: absolute; inset: 0; display: block; overflow: visible; border: 1px solid rgba(92,64,51,.25); background: linear-gradient(145deg, #e8dfc8, #d6c2a1 70%, #c8b28d); box-shadow: 0 17px 34px rgba(41,43,37,.2), 0 4px 8px rgba(41,43,37,.12); }
+.envelope-shell::after { position: absolute; inset: 0; z-index: 6; border: 1px solid rgba(255,255,255,.22); background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(92,64,51,.025) 3px 4px); content: ""; pointer-events: none; }
+.envelope-letter { position: absolute; top: 7%; left: 11%; z-index: 1; display: grid; align-content: start; justify-items: center; width: 78%; height: 86%; padding: 25px 20px; border: 1px solid rgba(92,64,51,.13); background: linear-gradient(135deg, #f8f5ec, #e8dfc8); box-shadow: 0 3px 10px rgba(41,43,37,.12); transform: translateY(30%); transition: transform .95s cubic-bezier(.2,.72,.2,1); }
+.letter-mark { color: var(--olive); font: 600 35px/.9 var(--serif); }
+.letter-rule { width: 35px; height: 1px; margin: 18px 0 12px; background: var(--sand); }
+.letter-copy { color: var(--muted); font: 8px var(--mono); letter-spacing: .15em; }
+.envelope-front { position: absolute; inset: 0; z-index: 3; background: linear-gradient(145deg, #d6c2a1, #e6d5b7 54%, #cfba96); clip-path: polygon(0 0, 50% 55%, 100% 0, 100% 100%, 0 100%); }
+.envelope-front::before,.envelope-front::after { position: absolute; inset: 0; border: 1px solid transparent; content: ""; }
+.envelope-front::before { background: linear-gradient(32deg, transparent 49.7%, rgba(92,64,51,.16) 50%, transparent 50.3%); }
+.envelope-front::after { background: linear-gradient(-32deg, transparent 49.7%, rgba(92,64,51,.13) 50%, transparent 50.3%); }
+.envelope-flap { position: absolute; inset: 0; z-index: 4; background: linear-gradient(150deg, #e9dcc2, #d2bd99); clip-path: polygon(0 0, 100% 0, 50% 66%); transform-origin: 50% 0; transform-style: preserve-3d; transition: transform .72s cubic-bezier(.22,.66,.22,1); backface-visibility: hidden; }
+.envelope-seal { position: absolute; top: 38%; left: 50%; z-index: 5; display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid rgba(232,223,200,.55); border-radius: 50%; background: var(--olive); box-shadow: 0 3px 8px rgba(41,43,37,.22); color: var(--paper); font: 600 16px var(--serif); transform: translate(-50%, -50%); transition: opacity .25s ease, transform .25s ease; }
+.intro-screen.is-opening .envelope-flap { transform: rotateX(180deg); }
+.intro-screen.is-opening .envelope-letter { transform: translateY(-28%); }
+.intro-screen.is-opening .envelope-seal { opacity: 0; transform: translate(-50%, -50%) scale(.7); }
+
+.intro-letter-wash { position: absolute; top: 50%; left: 50%; z-index: 1; width: min(68vw, 420px); height: min(43vw, 260px); border: 1px solid rgba(92,64,51,.15); background-color: #f4efdf; background-image: repeating-linear-gradient(0deg, transparent 0 6px, rgba(92,64,51,.035) 6px 7px); box-shadow: 0 10px 28px rgba(41,43,37,.18); opacity: 0; transform: translate(-50%, -50%) scale(.86); transition: width .82s cubic-bezier(.2,.72,.2,1), height .82s cubic-bezier(.2,.72,.2,1), opacity .3s ease, border-radius .6s ease; }
+.intro-screen.is-revealing .intro-letter-wash { z-index: 3; width: 100vw; height: 100vh; height: 100dvh; border: 0; box-shadow: none; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.intro-screen.is-revealing .intro-content { transition: opacity .2s ease; opacity: 0; }
+
+.intro-replay { padding: 0; border: 0; background: transparent; color: var(--olive); font: 9px var(--mono); letter-spacing: .08em; cursor: pointer; }
+.intro-replay:hover { text-decoration: underline; }
+.intro-replay:focus-visible { outline: 2px solid var(--olive2); outline-offset: 3px; }
+
+:root[data-theme="dark"] .intro-screen { background-color: #292b25; background-image: radial-gradient(ellipse at 50% 48%, rgba(214,194,161,.08), transparent 66%), repeating-linear-gradient(0deg, transparent 0 4px, rgba(232,223,200,.018) 4px 5px); color: var(--paper); }
+:root[data-theme="dark"] .intro-instruction { color: var(--paper); }
+
+@media (max-width: 650px) {
+  .intro-overline { margin-bottom: 20px; }
+  .virtual-envelope { width: min(86vw, 440px); }
+  .envelope-letter { padding: 18px 14px; }
+  .intro-instruction { margin-top: 24px; }
+  .intro-letter-wash { width: 78vw; height: 48vw; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-screen,.envelope-letter,.envelope-flap,.envelope-seal,.intro-letter-wash,.intro-content,.intro-skip { transition-duration: .01ms !important; }
+}

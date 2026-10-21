@@ -8,11 +8,31 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="responsive.css">
   <link rel="stylesheet" href="ojt.css">
+  <link rel="stylesheet" href="intro.css">
+  <script>try { document.documentElement.classList.add(sessionStorage.getItem("portfolio-envelope-opened") === "1" ? "intro-seen" : "intro-pending"); } catch { document.documentElement.classList.add("intro-pending"); }</script>
   <script src="ojt-data.js" defer></script>
   <script src="ojt.js" defer></script>
   <script src="script.js" defer></script>
+  <script src="intro.js" defer></script>
 </head>
 <body>
+  <div class="intro-screen" id="portfolioIntro" role="dialog" aria-modal="true" aria-labelledby="introInstruction">
+    <span class="intro-letter-wash" aria-hidden="true"></span>
+    <div class="intro-content">
+      <p class="intro-overline">A PERSONAL PORTFOLIO</p>
+      <button class="virtual-envelope" id="openEnvelope" type="button" aria-label="Open your letter and enter the portfolio" aria-expanded="false">
+        <span class="envelope-shell" aria-hidden="true">
+          <span class="envelope-letter"><span class="letter-mark">T.</span><span class="letter-rule"></span><span class="letter-copy">A NOTE FOR YOU</span></span>
+          <span class="envelope-front"></span>
+          <span class="envelope-flap"></span>
+          <span class="envelope-seal">T</span>
+        </span>
+      </button>
+      <p class="intro-instruction" id="introInstruction">You've got a letter</p>
+      <p class="intro-hint">Click or press Enter to open</p>
+      <button class="intro-skip" id="skipIntro" type="button">Skip intro</button>
+    </div>
+  </div>
   <div class="site-shell">
     <header class="topbar">
       <a class="brand" href="#home" aria-label="Go to home"><span class="brand-mark">T</span><span>TAN<span class="brand-dot">.</span></span></a>
@@ -38,7 +58,7 @@
         <div class="hero-grid">
           <div class="hero-copy">
             <p class="eyebrow"><span class="status-dot"></span> BS INFORMATION TECHNOLOGY STUDENT</p>
-            <h1 id="home-title">Creative thinking.<br><span>Purposeful design.</span></h1>
+            <h1 id="home-title" tabindex="-1">Creative thinking.<br><span>Purposeful design.</span></h1>
             <p class="hero-lead">I'm an IT student exploring the intersection of multimedia, visual design, documentation, and technology.</p>
             <p class="hero-note">Currently learning, creating, and building experience one project at a time.</p>
             <div class="hero-actions">
@@ -168,7 +188,7 @@
         <div class="contact-layout"><div><p class="eyebrow">06 — LET'S CONNECT</p><h2 id="contact-title">Have a project<br>in <span>mind?</span></h2><p class="section-intro">I'm open to learning opportunities, collaboration, and entry-level experiences where I can contribute and grow.</p><div class="contact-note"><span class="status-dot"></span> Available for suitable opportunities</div></div><div class="contact-card"><span class="card-kicker">CONTACT DETAILS</span><div class="contact-row"><span>EMAIL</span><a href="mailto:your.email@example.com">your.email@example.com ↗</a></div><div class="contact-row"><span>GITHUB</span><a href="https://github.com/AIByNature" target="_blank" rel="noreferrer">github.com/AIByNature ↗</a></div><div class="contact-row"><span>LINKEDIN</span><a href="https://www.linkedin.com/" target="_blank" rel="noreferrer">Add your LinkedIn ↗</a></div><p class="contact-hint">Replace the example email and profile links with your own details before publishing.</p><button class="button button-primary" id="copyEmail" data-email="your.email@example.com">Copy email address</button><p class="copy-feedback" id="copyFeedback" aria-live="polite"></p></div></div>
       </section>
     </main>
-    <footer class="footer"><span>© <span id="year"></span> [Your Name]</span><span>MADE WITH CURIOSITY & CARE</span><button class="back-top" data-go="home">BACK TO HOME ↑</button></footer>
+    <footer class="footer"><span>© <span id="year"></span> [Your Name]</span><span>MADE WITH CURIOSITY & CARE</span><button class="intro-replay" id="replayIntro" type="button">REPLAY INTRO</button><button class="back-top" data-go="home">BACK TO HOME ↑</button></footer>
   </div>
   <dialog class="ojt-lightbox" id="ojtLightbox" aria-label="OJT photo viewer">
     <button class="ojt-lightbox-close" type="button" id="ojtLightboxClose" aria-label="Close photo viewer">×</button>
