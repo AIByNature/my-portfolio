@@ -133,13 +133,129 @@
     }
   });
 
-  const gallery = document.getElementById("ojtGallery");
-  const photos = Array.isArray(data.photos) ? data.photos : [];
-  gallery.innerHTML = photos.length ? photos.map(photo => `<figure class="ojt-photo-card"><img src="${escapeHTML(photo.src)}" alt="${escapeHTML(photo.alt || "OJT documentation photo")}" loading="lazy"><figcaption>${escapeHTML(photo.caption || "OJT documentation")}</figcaption></figure>`).join("") : `<div class="ojt-empty"><span>NO PHOTOS / 00</span><p>Add your own permitted OJT documentation images to the <code>photos</code> array in <code>ojt-data.js</code>. No sample or stock images are used.</p></div>`;
-  gallery.querySelectorAll("img").forEach(image => image.addEventListener("error", () => {
-    const placeholder = document.createElement("div");
-    placeholder.className = "ojt-photo-placeholder-block";
-    placeholder.textContent = "PHOTO UNAVAILABLE";
-    image.replaceWith(placeholder);
-  }, { once: true }));
+  const docsCarousel = document.getElementById("ojtDocsCarousel");
+  const docsWindow = document.getElementById("ojtDocsWindow");
+  const docsTrack = document.getElementById("ojtDocsTrack");
+  const docsDots = document.getElementById("ojtDocsDots");
+  const docsPosition = document.getElementById("ojtDocsPosition");
+  const docsPrevious = document.getElementById("ojtDocsPrevious");
+  const docsNext = document.getElementById("ojtDocsNext");
+  const photoResources = (Array.isArray(data.photos) ? data.photos : []).filter(photo => photo?.src).map(photo => ({
+    type: "photo",
+    title: photo.title || photo.alt || "OJT photo documentation",
+    description: photo.caption || "",
+    category: "Photos",
+    actionLabel: "View Photo",
+    url: photo.src,
+    thumbnail: photo.src,
+    alt: photo.alt || photo.title || "OJT documentation photo"
+  }));
+  const resources = [...(Array.isArray(data.resources) ? data.resources : []), ...photoResources].filter(item => item?.title && item?.url);
+  let currentResource = 0;
+  let dragStartX = null;
+  let dragMoved = false;
+  let suppressCarouselClick = false;
+  let lastWheelNavigation = 0;
+
+  const safeLink = value => {
+    try {
+      const url = new URL(value, window.location.href);
+      return url.protocol === "https:" || url.origin === window.location.origin ? url.href : "";
+    } catch { return ""; }
+  };
+
+  function resourceMedia(resource) {
+    if (resource.thumbnail) return `<img src="${escapeHTML(resource.thumbnail)}" alt="${escapeHTML(resource.alt || resource.title)}" loading="lazy">`;
+    const icon = resource.type === "folder"
+      ? '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M5 12.5A3.5 3.5 0 0 1 8.5 9h11l4 4H40a3 3 0 0 1 3 3v19a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V12.5Z"/><path d="M5 18h38"/></svg>'
+      : '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M12 5h16l9 9v29H12z"/><path d="M28 5v10h9M18 24h13M18 30h13M18 36h9"/></svg>';
+    return `<span class="ojt-docs-icon" aria-hidden="true">${icon}</span>`;
+  }
+
+  function renderResourceCards() {
+    docsTrack.innerHTML = resources.length ? resources.map((resource, index) => {
+      const link = safeLink(resource.url);
+      const action = link
+        ? `<a class="ojt-docs-action" href="${escapeHTML(link)}" target="_blank" rel="noopener noreferrer">${escapeHTML(resource.actionLabel || "Open resource")} <span aria-hidden="true">&#8599;</span></a>`
+        : `<span class="ojt-docs-action is-unavailable">Resource link unavailable</span>`;
+      return `<article class="ojt-docs-slide" aria-label="Resource ${index + 1} of ${resources.length}" aria-hidden="${index !== currentResource}" ${index !== currentResource ? "inert" : ""}>
+        <div class="ojt-docs-card">
+          <div class="ojt-docs-media ${resource.thumbnail ? "has-image" : ""}">${resourceMedia(resource)}<span class="ojt-docs-media-label">${escapeHTML(resource.type === "folder" ? "DRIVE / FOLDER" : resource.type === "photo" ? "IMAGE / DOCUMENTATION" : "OJT / RESOURCE")}</span></div>
+          <div class="ojt-docs-copy"><span class="ojt-docs-category">${escapeHTML(resource.category || "OJT Resource")}</span><h4>${escapeHTML(resource.title)}</h4><p>${escapeHTML(resource.description || "")}</p>${action}</div>
+        </div>
+      </article>`;
+    }).join("") : `<div class="ojt-empty"><span>NO RESOURCES / 00</span><p>Add a verified file to the <code>resources</code> array in <code>ojt-data.js</code>.</p></div>`;
+
+    docsDots.innerHTML = resources.map((resource, index) => `<button type="button" class="ojt-docs-dot${index === currentResource ? " is-active" : ""}" data-resource-index="${index}" aria-label="Show resource ${index + 1}: ${escapeHTML(resource.title)}" aria-current="${index === currentResource ? "true" : "false"}"></button>`).join("");
+    docsTrack.querySelectorAll("img").forEach(image => image.addEventListener("error", () => {
+      image.remove();
+      image.closest(".ojt-docs-media")?.classList.remove("has-image");
+    }, { once: true }));
+    updateResourceCarousel();
+  }
+
+  function updateResourceCarousel() {
+    docsTrack.style.transform = `translateX(-${currentResource * 100}%)`;
+    docsTrack.querySelectorAll(".ojt-docs-slide").forEach((slide, index) => {
+      const active = index === currentResource;
+      slide.setAttribute("aria-hidden", String(!active));
+      slide.inert = !active;
+    });
+    docsPrevious.disabled = resources.length < 2 || currentResource === 0;
+    docsNext.disabled = resources.length < 2 || currentResource === resources.length - 1;
+    docsPosition.textContent = `${String(resources.length ? currentResource + 1 : 0).padStart(2, "0")} / ${String(resources.length).padStart(2, "0")}`;
+    docsDots.querySelectorAll(".ojt-docs-dot").forEach((dot, index) => {
+      dot.classList.toggle("is-active", index === currentResource);
+      dot.setAttribute("aria-current", String(index === currentResource));
+    });
+  }
+
+  function goToResource(index) {
+    if (index < 0 || index >= resources.length || index === currentResource) return;
+    currentResource = index;
+    updateResourceCarousel();
+  }
+
+  docsPrevious.addEventListener("click", () => goToResource(currentResource - 1));
+  docsNext.addEventListener("click", () => goToResource(currentResource + 1));
+  docsDots.addEventListener("click", event => {
+    const dot = event.target.closest("[data-resource-index]");
+    if (dot) goToResource(Number(dot.dataset.resourceIndex));
+  });
+  docsCarousel.addEventListener("keydown", event => {
+    if (event.target.closest("a, input, textarea, select")) return;
+    if (event.key === "ArrowLeft") { event.preventDefault(); goToResource(currentResource - 1); }
+    if (event.key === "ArrowRight") { event.preventDefault(); goToResource(currentResource + 1); }
+  });
+  docsWindow.addEventListener("pointerdown", event => {
+    if (event.target.closest("a, button")) return;
+    dragStartX = event.clientX;
+    dragMoved = false;
+    docsWindow.setPointerCapture(event.pointerId);
+  });
+  docsWindow.addEventListener("pointerup", event => {
+    if (dragStartX === null) return;
+    const distance = event.clientX - dragStartX;
+    if (Math.abs(distance) > 45) {
+      dragMoved = true;
+      goToResource(currentResource + (distance < 0 ? 1 : -1));
+      suppressCarouselClick = true;
+      window.setTimeout(() => { suppressCarouselClick = false; }, 0);
+    }
+    dragStartX = null;
+  });
+  docsWindow.addEventListener("pointercancel", () => { dragStartX = null; });
+  docsCarousel.addEventListener("click", event => {
+    if (suppressCarouselClick && dragMoved) { event.preventDefault(); event.stopPropagation(); }
+    dragMoved = false;
+  }, true);
+  docsWindow.addEventListener("wheel", event => {
+    if (Math.abs(event.deltaX) < 24 || Math.abs(event.deltaX) < Math.abs(event.deltaY)) return;
+    event.preventDefault();
+    const now = Date.now();
+    if (now - lastWheelNavigation < 450) return;
+    lastWheelNavigation = now;
+    goToResource(currentResource + (event.deltaX > 0 ? 1 : -1));
+  }, { passive: false });
+  renderResourceCards();
 })();

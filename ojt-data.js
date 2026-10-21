@@ -44,5 +44,17 @@ window.ojtData = {
     challenges: "",
     futureImprovements: ""
   },
-  photos: []
+  photos: [],
+  // Add only documents or images that are confirmed to exist and are meant to be shared.
+  resources: [
+    {
+      type: "folder",
+      title: "OJT Documentation & Resources",
+      description: "Access my OJT documentation, activity records, photos, and supporting materials.",
+      category: "OJT Documentation",
+      actionLabel: "Open Google Drive Folder",
+      url: "https://drive.google.com/drive/folders/1mY1c4kTNVdHXGjfeC4Oa_sD4v95eRkMV?usp=drive_link",
+      thumbnail: ""
+    }
+  ]
 };
