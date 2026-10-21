@@ -185,6 +185,70 @@ main {
   display: none;
 }
 
+.portrait-placeholder {
+  touch-action: pan-y;
+}
+
+.profile-image {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity .28s ease;
+}
+
+.profile-image.is-visible {
+  opacity: 1;
+}
+
+.portrait-placeholder.has-image::before,
+.portrait-placeholder.has-image .portrait-initials {
+  display: none;
+}
+
+.carousel-arrow {
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  transform: translateY(-50%);
+  border: 1px solid rgba(248, 245, 236, .55);
+  border-radius: 50%;
+  background: rgba(41, 43, 37, .38);
+  color: var(--white);
+  font: 24px/1 var(--sans);
+  cursor: pointer;
+  opacity: .72;
+  transition: opacity .2s, background .2s;
+}
+
+.carousel-arrow:hover,
+.carousel-arrow:focus-visible {
+  background: rgba(41, 43, 37, .72);
+  opacity: 1;
+}
+
+.carousel-arrow:focus-visible {
+  outline: 2px solid var(--white);
+  outline-offset: 2px;
+}
+
+.carousel-previous { left: 10px; }
+.carousel-next { right: 10px; }
+
+@media (hover: hover) and (pointer: fine) {
+  .carousel-arrow { opacity: 0; }
+  .portrait-placeholder:hover .carousel-arrow,
+  .portrait-placeholder:focus-within .carousel-arrow { opacity: .82; }
+}
+
 :root[data-theme="dark"] {
   color-scheme: dark;
   --ink: #eee9dc;

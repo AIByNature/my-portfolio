@@ -21,6 +21,49 @@ function showPage(pageId) {
 tabs.forEach(tab => tab.addEventListener("click", () => showPage(tab.dataset.page)));
 document.querySelectorAll("[data-go]").forEach(button => button.addEventListener("click", () => showPage(button.dataset.go)));
 
+// Add, remove, or replace profile image paths here. Missing files leave the card placeholder visible.
+const profileImages = [
+  "assets/profile-1.jpg",
+  "assets/profile-2.jpg",
+  "assets/profile-3.jpg",
+  "assets/profile-4.jpg",
+  "assets/profile-5.jpg",
+  "assets/profile-6.jpg"
+];
+const profileImage = document.getElementById("profileImage");
+const profileCarousel = document.getElementById("profileCarousel");
+const profileCounter = document.getElementById("profileCounter");
+let currentProfileImage = 0;
+
+function showProfileImage(index) {
+  const count = profileImages.length;
+  if (!count) {
+    profileCounter.textContent = "00 / 00";
+    profileImage.hidden = true;
+    profileCarousel.classList.remove("has-image");
+    return;
+  }
+
+  currentProfileImage = (index + count) % count;
+  profileCounter.textContent = `${String(currentProfileImage + 1).padStart(2, "0")} / ${String(count).padStart(2, "0")}`;
+  profileImage.alt = `Profile photo ${currentProfileImage + 1} of ${count}`;
+  profileImage.classList.remove("is-visible");
+  profileImage.hidden = false;
+  profileImage.onload = () => {
+    profileImage.classList.add("is-visible");
+    profileCarousel.classList.add("has-image");
+  };
+  profileImage.onerror = () => {
+    profileImage.hidden = true;
+    profileCarousel.classList.remove("has-image");
+  };
+  profileImage.src = profileImages[currentProfileImage];
+}
+
+document.getElementById("profilePrevious").addEventListener("click", () => showProfileImage(currentProfileImage - 1));
+document.getElementById("profileNext").addEventListener("click", () => showProfileImage(currentProfileImage + 1));
+showProfileImage(0);
+
 menuToggle.addEventListener("click", () => {
   const open = nav.classList.toggle("open");
   menuToggle.setAttribute("aria-expanded", String(open));

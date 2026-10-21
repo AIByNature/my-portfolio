@@ -40,8 +40,14 @@
             <div class="hero-meta"><span>VALENZUELA CITY, PH</span><span class="meta-line"></span><span>OPEN TO LEARNING OPPORTUNITIES</span></div>
           </div>
           <div class="hero-art">
-            <div class="art-topline"><span>PERSONAL PROFILE</span><span>01 / 06</span></div>
-            <div class="portrait-placeholder"><span class="portrait-initials">YOUR<br>PHOTO</span><span class="corner corner-one"></span><span class="corner corner-two"></span></div>
+            <div class="art-topline"><span>PERSONAL PROFILE</span><span id="profileCounter" aria-live="polite">01 / 01</span></div>
+            <div class="portrait-placeholder" id="profileCarousel" aria-label="Profile photos">
+              <span class="portrait-initials" id="profilePlaceholder">YOUR<br>PHOTO</span>
+              <img class="profile-image" id="profileImage" alt="Profile photo 1" hidden>
+              <button class="carousel-arrow carousel-previous" id="profilePrevious" type="button" aria-label="Previous profile photo" title="Previous photo"><span aria-hidden="true">‹</span></button>
+              <button class="carousel-arrow carousel-next" id="profileNext" type="button" aria-label="Next profile photo" title="Next photo"><span aria-hidden="true">›</span></button>
+              <span class="corner corner-one"></span><span class="corner corner-two"></span>
+            </div>
             <div class="art-caption"><div><span class="small-label">ROLE</span><strong>IT Student · Multimedia</strong></div><span class="art-symbol">✳</span></div>
             <div class="art-index">DESIGN / DOCUMENTATION / DIGITAL WORKS</div>
           </div>
