@@ -140,56 +140,44 @@
   const docsPosition = document.getElementById("ojtDocsPosition");
   const docsPrevious = document.getElementById("ojtDocsPrevious");
   const docsNext = document.getElementById("ojtDocsNext");
-  const photoResources = (Array.isArray(data.photos) ? data.photos : []).filter(photo => photo?.src).map(photo => ({
-    type: "photo",
-    title: photo.title || photo.alt || "OJT photo documentation",
-    description: photo.caption || "",
-    category: "Photos",
-    actionLabel: "View Photo",
-    url: photo.src,
-    thumbnail: photo.src,
-    alt: photo.alt || photo.title || "OJT documentation photo"
+  const photoResources = (Array.isArray(data.photos) ? data.photos : []).filter(photo => {
+    const src = String(photo?.src || "");
+    return /^assets\/ojt\/[\w./ -]+\.(?:jpe?g|png|webp|avif)$/i.test(src) && !src.split("/").includes("..");
+  }).map(photo => ({
+    src: String(photo.src),
+    title: String(photo.title || photo.alt || "OJT photo"),
+    alt: String(photo.alt || photo.title || "OJT photo documentation"),
+    caption: String(photo.caption || "")
   }));
-  const resources = [...(Array.isArray(data.resources) ? data.resources : []), ...photoResources].filter(item => item?.title && item?.url);
   let currentResource = 0;
+  let lightboxIndex = 0;
+  const lightbox = document.getElementById("ojtLightbox");
+  const lightboxImage = document.getElementById("ojtLightboxImage");
+  const lightboxPlaceholder = document.getElementById("ojtLightboxPlaceholder");
+  const lightboxCaption = document.getElementById("ojtLightboxCaption");
+  const lightboxCount = document.getElementById("ojtLightboxCount");
+  const lightboxPrevious = document.getElementById("ojtLightboxPrevious");
+  const lightboxNext = document.getElementById("ojtLightboxNext");
   let dragStartX = null;
   let dragMoved = false;
   let suppressCarouselClick = false;
   let lastWheelNavigation = 0;
 
-  const safeLink = value => {
-    try {
-      const url = new URL(value, window.location.href);
-      return url.protocol === "https:" || url.origin === window.location.origin ? url.href : "";
-    } catch { return ""; }
-  };
-
-  function resourceMedia(resource) {
-    if (resource.thumbnail) return `<img src="${escapeHTML(resource.thumbnail)}" alt="${escapeHTML(resource.alt || resource.title)}" loading="lazy">`;
-    const icon = resource.type === "folder"
-      ? '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M5 12.5A3.5 3.5 0 0 1 8.5 9h11l4 4H40a3 3 0 0 1 3 3v19a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V12.5Z"/><path d="M5 18h38"/></svg>'
-      : '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M12 5h16l9 9v29H12z"/><path d="M28 5v10h9M18 24h13M18 30h13M18 36h9"/></svg>';
-    return `<span class="ojt-docs-icon" aria-hidden="true">${icon}</span>`;
-  }
-
   function renderResourceCards() {
-    docsTrack.innerHTML = resources.length ? resources.map((resource, index) => {
-      const link = safeLink(resource.url);
-      const action = link
-        ? `<a class="ojt-docs-action" href="${escapeHTML(link)}" target="_blank" rel="noopener noreferrer">${escapeHTML(resource.actionLabel || "Open resource")} <span aria-hidden="true">&#8599;</span></a>`
-        : `<span class="ojt-docs-action is-unavailable">Resource link unavailable</span>`;
-      return `<article class="ojt-docs-slide" aria-label="Resource ${index + 1} of ${resources.length}" aria-hidden="${index !== currentResource}" ${index !== currentResource ? "inert" : ""}>
+    docsTrack.innerHTML = photoResources.length ? photoResources.map((photo, index) => `
+      <article class="ojt-docs-slide" aria-label="Photo ${index + 1} of ${photoResources.length}" aria-hidden="${index !== currentResource}" ${index !== currentResource ? "inert" : ""}>
         <div class="ojt-docs-card">
-          <div class="ojt-docs-media ${resource.thumbnail ? "has-image" : ""}">${resourceMedia(resource)}<span class="ojt-docs-media-label">${escapeHTML(resource.type === "folder" ? "DRIVE / FOLDER" : resource.type === "photo" ? "IMAGE / DOCUMENTATION" : "OJT / RESOURCE")}</span></div>
-          <div class="ojt-docs-copy"><span class="ojt-docs-category">${escapeHTML(resource.category || "OJT Resource")}</span><h4>${escapeHTML(resource.title)}</h4><p>${escapeHTML(resource.description || "")}</p>${action}</div>
+          <button class="ojt-docs-media has-image" type="button" data-photo-index="${index}" aria-label="Enlarge: ${escapeHTML(photo.alt)}"><img src="${escapeHTML(photo.src)}" alt="${escapeHTML(photo.alt)}" loading="${index === 0 ? "eager" : "lazy"}"><span class="ojt-photo-placeholder-block" hidden>PHOTO UNAVAILABLE</span><span class="ojt-docs-media-label">OJT / PHOTO</span></button>
+          <div class="ojt-docs-copy"><span class="ojt-docs-category">PHOTO ${String(index + 1).padStart(2, "0")}</span><h4>${escapeHTML(photo.title)}</h4>${photo.caption ? `<p>${escapeHTML(photo.caption)}</p>` : ""}<button class="ojt-docs-action" type="button" data-photo-index="${index}">Enlarge Photo <span aria-hidden="true">&#8599;</span></button></div>
         </div>
-      </article>`;
-    }).join("") : `<div class="ojt-empty"><span>NO RESOURCES / 00</span><p>Add a verified file to the <code>resources</code> array in <code>ojt-data.js</code>.</p></div>`;
+      </article>`).join("") : `<div class="ojt-empty"><span>NO PHOTOS / 00</span><p>Download the actual OJT photos from your Drive folder into <code>assets/ojt/</code>, then add their local paths and verified alt text to the <code>photos</code> array in <code>ojt-data.js</code>.</p></div>`;
 
-    docsDots.innerHTML = resources.map((resource, index) => `<button type="button" class="ojt-docs-dot${index === currentResource ? " is-active" : ""}" data-resource-index="${index}" aria-label="Show resource ${index + 1}: ${escapeHTML(resource.title)}" aria-current="${index === currentResource ? "true" : "false"}"></button>`).join("");
+    docsDots.innerHTML = photoResources.map((photo, index) => `<button type="button" class="ojt-docs-dot${index === currentResource ? " is-active" : ""}" data-resource-index="${index}" aria-label="Show photo ${index + 1}: ${escapeHTML(photo.title)}" aria-current="${index === currentResource ? "true" : "false"}"></button>`).join("");
     docsTrack.querySelectorAll("img").forEach(image => image.addEventListener("error", () => {
-      image.remove();
+      image.hidden = true;
       image.closest(".ojt-docs-media")?.classList.remove("has-image");
+      const placeholder = image.parentElement.querySelector(".ojt-photo-placeholder-block");
+      if (placeholder) placeholder.hidden = false;
     }, { once: true }));
     updateResourceCarousel();
   }
@@ -201,9 +189,9 @@
       slide.setAttribute("aria-hidden", String(!active));
       slide.inert = !active;
     });
-    docsPrevious.disabled = resources.length < 2 || currentResource === 0;
-    docsNext.disabled = resources.length < 2 || currentResource === resources.length - 1;
-    docsPosition.textContent = `${String(resources.length ? currentResource + 1 : 0).padStart(2, "0")} / ${String(resources.length).padStart(2, "0")}`;
+    docsPrevious.disabled = photoResources.length < 2;
+    docsNext.disabled = photoResources.length < 2;
+    docsPosition.textContent = `${String(photoResources.length ? currentResource + 1 : 0).padStart(2, "0")} / ${String(photoResources.length).padStart(2, "0")}`;
     docsDots.querySelectorAll(".ojt-docs-dot").forEach((dot, index) => {
       dot.classList.toggle("is-active", index === currentResource);
       dot.setAttribute("aria-current", String(index === currentResource));
@@ -211,10 +199,39 @@
   }
 
   function goToResource(index) {
-    if (index < 0 || index >= resources.length || index === currentResource) return;
-    currentResource = index;
+    if (!photoResources.length) return;
+    currentResource = (index + photoResources.length) % photoResources.length;
     updateResourceCarousel();
   }
+
+  function showLightboxPhoto(index) {
+    if (!photoResources.length) return;
+    lightboxIndex = (index + photoResources.length) % photoResources.length;
+    const photo = photoResources[lightboxIndex];
+    lightboxImage.hidden = false;
+    lightboxPlaceholder.hidden = true;
+    lightboxImage.alt = photo.alt;
+    lightboxImage.src = photo.src;
+    lightboxImage.onerror = () => { lightboxImage.hidden = true; lightboxPlaceholder.hidden = false; };
+    document.getElementById("ojtLightboxLabel").textContent = photo.title;
+    lightboxCaption.textContent = photo.caption;
+    lightboxCount.textContent = `${String(lightboxIndex + 1).padStart(2, "0")} / ${String(photoResources.length).padStart(2, "0")}`;
+    lightboxPrevious.hidden = lightboxNext.hidden = photoResources.length < 2;
+    if (!lightbox.open) lightbox.showModal();
+  }
+
+  docsTrack.addEventListener("click", event => {
+    const opener = event.target.closest("[data-photo-index]");
+    if (opener) showLightboxPhoto(Number(opener.dataset.photoIndex));
+  });
+  document.getElementById("ojtLightboxClose").addEventListener("click", () => lightbox.close());
+  lightboxPrevious.addEventListener("click", () => showLightboxPhoto(lightboxIndex - 1));
+  lightboxNext.addEventListener("click", () => showLightboxPhoto(lightboxIndex + 1));
+  lightbox.addEventListener("click", event => { if (event.target === lightbox) lightbox.close(); });
+  lightbox.addEventListener("keydown", event => {
+    if (event.key === "ArrowLeft") { event.preventDefault(); showLightboxPhoto(lightboxIndex - 1); }
+    if (event.key === "ArrowRight") { event.preventDefault(); showLightboxPhoto(lightboxIndex + 1); }
+  });
 
   docsPrevious.addEventListener("click", () => goToResource(currentResource - 1));
   docsNext.addEventListener("click", () => goToResource(currentResource + 1));
@@ -228,7 +245,7 @@
     if (event.key === "ArrowRight") { event.preventDefault(); goToResource(currentResource + 1); }
   });
   docsWindow.addEventListener("pointerdown", event => {
-    if (event.target.closest("a, button")) return;
+    if (event.target.closest(".ojt-docs-arrow, .ojt-docs-dot, .ojt-docs-action")) return;
     dragStartX = event.clientX;
     dragMoved = false;
     docsWindow.setPointerCapture(event.pointerId);
