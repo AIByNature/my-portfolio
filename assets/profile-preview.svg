@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-labelledby="title">
+  <title id="title">Illustrated profile preview</title>
+  <defs>
+    <linearGradient id="backdrop" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#a6a17a"/>
+      <stop offset=".58" stop-color="#d6c2a1"/>
+      <stop offset="1" stop-color="#5c4033"/>
+    </linearGradient>
+    <linearGradient id="shirt" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#667748"/>
+      <stop offset="1" stop-color="#3e4c2c"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="1000" fill="url(#backdrop)"/>
+  <circle cx="620" cy="190" r="170" fill="#e8dfc8" opacity=".19"/>
+  <path d="M0 740 800 610v390H0Z" fill="#5c4033" opacity=".17"/>
+  <path d="M145 1000c25-214 131-336 255-336s230 122 255 336Z" fill="url(#shirt)"/>
+  <path d="M328 625h144v118c-23 39-121 39-144 0Z" fill="#b77f61"/>
+  <ellipse cx="400" cy="410" rx="172" ry="213" fill="#c99573"/>
+  <path d="M225 407c-20-181 68-294 199-294 138 0 215 95 177 302l-39-94c-45 3-91-31-120-72-49 62-120 97-204 98Z" fill="#292b25"/>
+  <path d="M314 430c24-15 49-15 72 0m28 0c24-15 49-15 72 0" fill="none" stroke="#513b32" stroke-width="10" stroke-linecap="round"/>
+  <path d="M366 535c22 16 48 16 70 0" fill="none" stroke="#815343" stroke-width="9" stroke-linecap="round"/>
+  <path d="M230 398c-37-4-50 22-37 63 9 28 26 39 47 36m334-99c37-4 50 22 37 63-9 28-26 39-47 36" fill="#bd8968"/>
+  <path d="M270 758c36 41 82 60 130 60s94-19 130-60" fill="none" stroke="#d6c2a1" stroke-width="4" opacity=".65"/>
+  <path d="M44 44h82M44 44v82M756 956h-82m82 0v-82" fill="none" stroke="#f8f5ec" stroke-width="3" opacity=".8"/>
+</svg>

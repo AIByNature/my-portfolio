@@ -23,7 +23,7 @@ document.querySelectorAll("[data-go]").forEach(button => button.addEventListener
 
 // Add, remove, or replace profile image paths and alt text here.
 const profileCards = [
-  { src: "assets/profile-1.jpg", alt: "Profile photo 1", role: "IT Student · Multimedia", description: "" },
+  { src: "assets/profile-preview.svg", alt: "Illustrated profile preview", role: "IT Student · Multimedia", description: "" },
   { src: "assets/profile-2.jpg", alt: "Profile photo 2", role: "IT Student · Multimedia", description: "" },
   { src: "assets/profile-3.jpg", alt: "Profile photo 3", role: "IT Student · Multimedia", description: "" },
   { src: "assets/profile-4.jpg", alt: "Profile photo 4", role: "IT Student · Multimedia", description: "" },
