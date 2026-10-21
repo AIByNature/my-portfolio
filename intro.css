@@ -30,7 +30,7 @@ html.intro-seen .intro-screen { display: none; }
 .virtual-envelope:disabled { cursor: default; }
 .envelope-shell { position: absolute; inset: 0; display: block; overflow: visible; border: 1px solid rgba(92,64,51,.25); background: linear-gradient(145deg, #e8dfc8, #d6c2a1 70%, #c8b28d); box-shadow: 0 17px 34px rgba(41,43,37,.2), 0 4px 8px rgba(41,43,37,.12); }
 .envelope-shell::after { position: absolute; inset: 0; z-index: 6; border: 1px solid rgba(255,255,255,.22); background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(92,64,51,.025) 3px 4px); content: ""; pointer-events: none; }
-.envelope-letter { position: absolute; top: 7%; left: 11%; z-index: 1; display: grid; align-content: start; justify-items: center; width: 78%; height: 86%; padding: 25px 20px; border: 1px solid rgba(92,64,51,.13); background: linear-gradient(135deg, #f8f5ec, #e8dfc8); box-shadow: 0 3px 10px rgba(41,43,37,.12); transform: translateY(30%); transition: transform .95s cubic-bezier(.2,.72,.2,1); }
+.envelope-letter { position: absolute; top: 7%; left: 11%; z-index: 1; display: grid; align-content: start; justify-items: center; width: 78%; height: 86%; padding: 25px 20px; border: 1px solid rgba(92,64,51,.13); background: linear-gradient(135deg, #f8f5ec, #e8dfc8); box-shadow: 0 3px 10px rgba(41,43,37,.12); transform: translateY(0); transition: transform .95s cubic-bezier(.2,.72,.2,1); }
 .letter-mark { color: var(--olive); font: 600 35px/.9 var(--serif); }
 .letter-rule { width: 35px; height: 1px; margin: 18px 0 12px; background: var(--sand); }
 .letter-copy { color: var(--muted); font: 8px var(--mono); letter-spacing: .15em; }
