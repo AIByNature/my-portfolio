@@ -66,6 +66,17 @@
   envelope.addEventListener("click", openEnvelope);
   skipButton.addEventListener("click", finishIntro);
   document.addEventListener("keydown", event => {
+    const introIsActive = document.documentElement.classList.contains("intro-pending");
+    const isOpenKey = event.key === "Enter" || event.key === " ";
+
+    // Native button activation handles focused controls, while this also lets
+    // Enter/Space open the envelope when keyboard focus is elsewhere on intro.
+    if (introIsActive && isOpenKey && event.target !== skipButton) {
+      event.preventDefault();
+      openEnvelope();
+      return;
+    }
+
     if (event.key === "Escape" && document.documentElement.classList.contains("intro-pending")) finishIntro();
   });
 
