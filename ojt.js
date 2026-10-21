@@ -114,15 +114,6 @@
   nextPage.addEventListener("click", () => { page += 1; renderAttendance(); });
   renderAttendance();
 
-  const activities = document.getElementById("ojtActivities");
-  activities.innerHTML = (data.activities || []).map((activity, index) => `<article class="ojt-local-activity">
-    <span class="ojt-category">${escapeHTML(activity.category || "OJT EXPERIENCE")}</span>
-    <span class="ojt-local-index">${String(index + 1).padStart(2, "0")}</span>
-    <h4>${escapeHTML(activity.title)}</h4>
-    ${activity.description ? `<p>${escapeHTML(activity.description)}</p>` : ""}
-    <small>Undated activity summary</small>
-  </article>`).join("");
-
   document.getElementById("ojtSkills").innerHTML = (data.skills || []).map(skill => `<span class="ojt-skill-tag">${escapeHTML(skill)}</span>`).join("");
 
   const reflectionKey = "portfolio-ojt-reflections-v1";
@@ -156,6 +147,16 @@
   const lightboxPrevious = document.getElementById("ojtLightboxPrevious");
   const lightboxNext = document.getElementById("ojtLightboxNext");
   let activePhoto = 0;
+  const photoWheel = document.getElementById("ojtPhotoWheel");
+  const photoWheelStage = document.getElementById("ojtPhotoWheelStage");
+  const photoWheelCounter = document.getElementById("ojtWheelCounter");
+  const photoWheelAngle = 34;
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let wheelIndex = 0;
+  let wheelAnimating = false;
+  let queuedWheelSteps = 0;
+  let queuedPhotoTarget = null;
+  let queuedPhotoOpen = false;
 
   docsTrack.innerHTML = photoResources.map((photo, index) => `
     <button class="ojt-polaroid" type="button" data-photo-index="${index}" aria-label="Open OJT photo ${index + 1}">
@@ -177,6 +178,126 @@
     lightboxImage.alt = photo.alt;
     if (!lightbox.open) lightbox.showModal();
   }
+
+  function renderPhotoWheel() {
+    if (!photoResources.length) {
+      photoWheelStage.innerHTML = "";
+      photoWheelCounter.textContent = "00 / 00";
+      return;
+    }
+    photoWheelCounter.textContent = `${String(wheelIndex + 1).padStart(2, "0")} / ${String(photoResources.length).padStart(2, "0")}`;
+    photoWheelStage.innerHTML = Array.from({ length: 7 }, (_, slot) => {
+      const offset = slot - 3;
+      const index = (wheelIndex + offset + photoResources.length) % photoResources.length;
+      const photo = photoResources[index];
+      const tilt = offset === 0 ? 0 : (offset % 2 ? -1.4 : 1.2);
+      const opacity = Math.max(.12, 1 - Math.abs(offset) * .23);
+      return `<button class="ojt-wheel-card${offset === 0 ? " is-active" : ""}" type="button" data-wheel-photo="${index}" aria-label="Bring OJT photo ${index + 1} to the front and open it" style="--wheel-angle:${-offset * photoWheelAngle}deg;--wheel-tilt:${tilt}deg;--wheel-opacity:${opacity}">
+        <img src="${escapeHTML(photo.src)}" alt="${escapeHTML(photo.alt)}" loading="${Math.abs(offset) < 2 ? "eager" : "lazy"}" decoding="async">
+      </button>`;
+    }).join("");
+  }
+
+  function rotatePhotoWheel(steps, openWhenFinished = false) {
+    if (!photoResources.length) return;
+    if (wheelAnimating) {
+      queuedWheelSteps = Math.max(-8, Math.min(8, queuedWheelSteps + steps));
+      return;
+    }
+    if (!steps) {
+      if (openWhenFinished) showPhoto(wheelIndex);
+      return;
+    }
+
+    wheelAnimating = true;
+    const duration = reducedMotion.matches ? 0 : Math.min(820, 380 + Math.abs(steps) * 90);
+    photoWheelStage.style.transition = `transform ${duration}ms cubic-bezier(.22,.68,.22,1)`;
+    requestAnimationFrame(() => { photoWheelStage.style.transform = `rotateX(${steps * photoWheelAngle}deg)`; });
+
+    let finished = false;
+    const finishRotation = () => {
+      if (finished) return;
+      finished = true;
+      window.clearTimeout(fallbackTimer);
+      wheelIndex = (wheelIndex + steps + photoResources.length) % photoResources.length;
+      renderPhotoWheel();
+      photoWheelStage.style.transition = "none";
+      photoWheelStage.style.transform = "rotateX(0deg)";
+      photoWheelStage.offsetHeight;
+      requestAnimationFrame(() => { photoWheelStage.style.transition = ""; });
+      wheelAnimating = false;
+      const shouldOpenPhoto = openWhenFinished || queuedPhotoOpen;
+      queuedPhotoOpen = false;
+
+      if (queuedPhotoTarget !== null) {
+        const target = queuedPhotoTarget;
+        queuedPhotoTarget = null;
+        movePhotoTo(target, shouldOpenPhoto);
+      } else if (queuedWheelSteps) {
+        const nextStep = Math.sign(queuedWheelSteps);
+        queuedWheelSteps -= nextStep;
+        rotatePhotoWheel(nextStep, shouldOpenPhoto);
+      } else if (shouldOpenPhoto) {
+        showPhoto(wheelIndex);
+      }
+    };
+    photoWheelStage.addEventListener("transitionend", event => {
+      if (event.target === photoWheelStage && event.propertyName === "transform") finishRotation();
+    }, { once: true });
+    const fallbackTimer = window.setTimeout(finishRotation, duration + 80);
+  }
+
+  function movePhotoTo(target, openWhenFinished = true) {
+    if (!photoResources.length) return;
+    if (wheelAnimating) {
+      queuedPhotoTarget = target;
+      queuedPhotoOpen = openWhenFinished;
+      return;
+    }
+    const count = photoResources.length;
+    const forward = (target - wheelIndex + count) % count;
+    const steps = forward > count / 2 ? forward - count : forward;
+    rotatePhotoWheel(steps, openWhenFinished);
+  }
+
+  renderPhotoWheel();
+  photoWheel.addEventListener("wheel", event => {
+    if (Math.abs(event.deltaY) < Math.abs(event.deltaX) * .6) return;
+    event.preventDefault();
+    rotatePhotoWheel(Math.sign(event.deltaY));
+  }, { passive: false });
+  photoWheel.addEventListener("keydown", event => {
+    if (["ArrowDown", "ArrowRight"].includes(event.key)) {
+      event.preventDefault();
+      rotatePhotoWheel(1);
+    } else if (["ArrowUp", "ArrowLeft"].includes(event.key)) {
+      event.preventDefault();
+      rotatePhotoWheel(-1);
+    }
+  });
+  let touchStartY = null;
+  let suppressWheelClick = false;
+  photoWheel.addEventListener("touchstart", event => { touchStartY = event.changedTouches[0]?.clientY ?? null; }, { passive: true });
+  photoWheel.addEventListener("touchend", event => {
+    if (touchStartY === null) return;
+    const delta = touchStartY - (event.changedTouches[0]?.clientY ?? touchStartY);
+    if (Math.abs(delta) > 28) {
+      suppressWheelClick = true;
+      window.setTimeout(() => { suppressWheelClick = false; }, 450);
+      rotatePhotoWheel(Math.sign(delta));
+    }
+    touchStartY = null;
+  }, { passive: true });
+  photoWheel.addEventListener("click", event => {
+    if (suppressWheelClick) return;
+    const card = event.target.closest("[data-wheel-photo]");
+    if (card) movePhotoTo(Number(card.dataset.wheelPhoto));
+  });
+  document.getElementById("ojtWheelPrevious").addEventListener("click", () => rotatePhotoWheel(-1));
+  document.getElementById("ojtWheelNext").addEventListener("click", () => rotatePhotoWheel(1));
+  photoWheel.addEventListener("error", event => {
+    if (event.target instanceof HTMLImageElement) event.target.hidden = true;
+  }, true);
 
   docsTrack.addEventListener("click", event => {
     const opener = event.target.closest("[data-photo-index]");
