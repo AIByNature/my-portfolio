@@ -800,9 +800,12 @@ body.nav-open {
 .mole-face i:nth-child(2) { right: 29%; }
 .mole-face b { position: absolute; top: 54%; left: 50%; width: 17%; aspect-ratio: 1.2; border-radius: 50%; background: #d48b80; transform: translateX(-50%); }
 .whack-hole.is-active .whack-mole { opacity: 1; transform: translate(-50%, 0) scale(1); }
-.whack-hole.is-hit .whack-mole { opacity: 0; transform: translate(-50%, 72%) scale(.72); transition-duration: .09s; }
-.whack-hammer { position: absolute; z-index: 4; top: 0; right: 0; width: 42%; color: var(--brown); opacity: 0; pointer-events: none; transform: rotate(-55deg) scale(.6); transform-origin: 70% 70%; }
-.whack-hammer svg { display: block; width: 100%; filter: drop-shadow(0 2px 1px rgba(41, 43, 37, .25)); }
+.whack-hole.is-hit .whack-mole { animation: mole-hit-pop .24s cubic-bezier(.2, .8, .2, 1) both; transition: none; }
+.whack-hole.is-hit::after { position: absolute; z-index: 3; top: 34%; left: 50%; width: 30%; aspect-ratio: 1; border: 2px solid var(--sand); border-radius: 50%; box-shadow: 0 0 0 3px rgba(214, 194, 161, .28); content: ""; pointer-events: none; animation: impact-pop .3s ease-out both; }
+.whack-hammer { position: absolute; z-index: 4; top: -3%; right: -3%; width: 48%; height: 55%; color: var(--brown); opacity: 0; pointer-events: none; transform: rotate(-55deg) scale(.6); transform-origin: 70% 70%; }
+.whack-hammer::before { position: absolute; z-index: 1; top: 6%; left: 6%; width: 67%; height: 23%; border: 2px solid #493629; border-radius: 4px 4px 2px 2px; background: linear-gradient(145deg, #96775d, #5c4033); box-shadow: inset 0 2px 2px rgba(255, 255, 255, .22), 0 2px 3px rgba(41, 43, 37, .25); content: ""; transform: rotate(-42deg); }
+.whack-hammer::after { position: absolute; top: 23%; left: 43%; width: 16%; height: 67%; border: 1px solid #6a4c35; border-radius: 4px; background: linear-gradient(90deg, #b99a73, #d6c2a1 45%, #a98560); box-shadow: 0 2px 3px rgba(41, 43, 37, .2); content: ""; transform: rotate(28deg); transform-origin: 50% 8%; }
+.whack-hammer svg { display: none; }
 .whack-hole.is-hit .whack-hammer { animation: hammer-strike .3s ease-out both; }
 .mini-game-message { position: absolute; z-index: 3; inset: 0; display: grid; place-items: center; margin: 0; padding: 18px; background: rgba(232, 223, 200, .82); color: var(--ink); font: 14px/1.45 var(--serif); text-align: center; pointer-events: none; transition: opacity .15s ease; }
 .mini-game-arena.is-active .mini-game-message { opacity: 0; }
@@ -817,7 +820,9 @@ body.nav-open {
 :root[data-theme="dark"] .mini-game-close { color: var(--paper); }
 
 @keyframes game-panel-in { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes hammer-strike { 0% { opacity: 0; transform: rotate(-55deg) scale(.6) translate(3px, -5px); } 45% { opacity: 1; transform: rotate(4deg) scale(1.08) translate(-2px, 2px); } 100% { opacity: 0; transform: rotate(15deg) scale(.92) translate(-3px, 4px); } }
+@keyframes hammer-strike { 0% { opacity: 0; transform: rotate(-60deg) scale(.65) translate(-8px, -10px); } 34% { opacity: 1; transform: rotate(10deg) scale(1.12) translate(0, 3px); } 52% { opacity: 1; transform: rotate(-8deg) scale(.96) translate(0, -1px); } 100% { opacity: 0; transform: rotate(13deg) scale(.88) translate(4px, 5px); } }
+@keyframes mole-hit-pop { 0% { opacity: 1; transform: translate(-50%, 0) scale(1); } 34% { opacity: 1; transform: translate(-50%, -20%) scale(1.28); } 100% { opacity: 0; transform: translate(-50%, 68%) scale(.72); } }
+@keyframes impact-pop { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.35); } 35% { opacity: .95; } 100% { opacity: 0; transform: translate(-50%, -50%) scale(2.2); } }
 
 @media (max-width: 650px) {
   .mini-game-launcher { left: calc(16px + env(safe-area-inset-left, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
@@ -828,5 +833,7 @@ body.nav-open {
 @media (prefers-reduced-motion: reduce) {
   .mini-game-launcher,.mini-game-panel,.whack-mole,.whack-hammer { animation: none; transition: none; }
   .whack-hole.is-hit .whack-hammer { opacity: 1; transform: none; }
+  .whack-hole.is-hit .whack-mole { opacity: 0; transform: translate(-50%, 68%) scale(.72); }
+  .whack-hole.is-hit::after { opacity: 0; animation: none; }
 }
 
