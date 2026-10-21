@@ -30,17 +30,10 @@ If Git says no upstream branch is set, follow the command it prints. If you clon
 ## Deploy
 Import `AIByNature/my-portfolio` at https://vercel.com/new. For this plain HTML site, no build command is needed; leave the output directory empty/default unless Vercel asks otherwise.
 
-## Google Docs OJT integration
+## OJT local data
 
-The portfolio reads the fixed document ID in `GOOGLE_DOCS_DOCUMENT_ID` through the server-side `/api/ojt` Vercel Function. Visitors cannot supply another document ID. The parser recognizes `Week 1` style headings, Google Docs heading styles, and inline labels for dates, locations, hours, activities, skills, challenges, and reflections. It preserves source text and leaves missing information blank. The source report could not be inspected from this workspace, so review its parsed result once connected. The site never edits the original document.
+The OJT page uses `ojt-data.js` as its only data source. Its summary values and undated activity descriptions come from the provided request. Attendance rows remain empty until copied exactly from `On The Job Requirements.pdf`; that PDF was not present in the workspace when this change was made. No cloud credentials or service account are required.
 
-1. In Google Cloud Console, create or select a project and enable **Google Docs API** and **Google Drive API**.
-2. Create a service account and JSON key. Share the existing report with the service account email as a **Viewer**. Do not make the report public.
-3. In Vercel Project Settings → Environment Variables, add the following for Preview and Production:
-   - `GOOGLE_DOCS_DOCUMENT_ID` = `1AUfp2S6zZt3Ow2Zn2VhfwMKlOQ9rngF8Z0uYDYbL6vw`
-   - `GOOGLE_SERVICE_ACCOUNT_EMAIL` = the service account email
-   - `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY` = the `private_key` from its JSON key, including the BEGIN/END lines. Literal `\n` line breaks are supported.
-4. Redeploy after adding the variables. `/api/ojt` caches server responses for five minutes. The OJT page refreshes when opened and has a manual Refresh/Retry button. The browser keeps its last successful public payload as an outage fallback.
-5. For local development, copy `.env.example` to `.env.local`, fill in the same values, and run `npx vercel dev` from this folder. Never commit `.env.local` or service-account JSON files. Opening `index.html` directly or using static-only Live Server cannot run the API route.
+To add attendance, add one object per source row to `dutyRecords`, using the fields `dutyNumber`, `date`, `timeIn`, `timeOut`, and `recordedTime`. Copy each value from the PDF, and keep recorded time values as strings so their notation is preserved.
 
-The endpoint uses the read-only `documents.readonly` and `drive.metadata.readonly` Google scopes. It does not log report contents or return credentials. Confirm that the document contains only information you intend to publish on your portfolio before connecting it.
+The attendance view searches by duty number or date, filters by month, and paginates in groups of ten. Activities and skills are maintained in the same file and intentionally have no dates. Photos can be added to `photos` as `{ src, alt, caption }`. Reflection notes can be saved in the current browser, then copied into the `reflections` object in `ojt-data.js` to persist with the project.
