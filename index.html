@@ -98,7 +98,7 @@
       </section>
 
       <section class="page" id="skills" aria-labelledby="skills-title">
-        <div class="section-heading"><p class="eyebrow">02 — WHAT I BRING</p><h2 id="skills-title">Skills & <span>growth.</span></h2><p class="section-intro">A snapshot of what I can do today and the practical areas I’m continuing to develop. Select a skill to see the kinds of work it includes.</p></div>
+        <div class="section-heading"><p class="eyebrow">02 — WHAT I BRING</p><h2 id="skills-title">Skills & <span>growth.</span></h2><p class="section-intro">A snapshot of what I can do today and the practical areas I’m continuing to develop. Each card includes examples of the work involved.</p></div>
         <div class="skills-carousel" aria-label="Skills carousel">
           <button class="skills-carousel-arrow" id="skillsPrevious" type="button" aria-label="Previous skill" disabled>&#8592;</button>
           <div class="skills-carousel-viewport" id="skillsCarouselViewport" role="region" aria-roledescription="carousel" aria-label="Skills growth map" tabindex="0">
@@ -191,6 +191,17 @@
       </section>
     </main>
     <footer class="footer"><span>© <span id="year"></span> Miguel</span><span>MADE WITH CURIOSITY & CARE</span><button class="intro-replay" id="replayIntro" type="button">REPLAY INTRO</button><button class="back-top" data-go="home">BACK TO HOME ↑</button></footer>
+    <button class="mini-game-launcher" id="miniGameLauncher" type="button" aria-label="Open Click the Target game" aria-expanded="false" aria-controls="miniGamePanel" title="Play a mini-game"><span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 9h11a4.5 4.5 0 0 1 4.2 6.1l-1.1 2.8a2 2 0 0 1-3.2.8L14.8 16H9.2l-2.6 2.7a2 2 0 0 1-3.2-.8l-1.1-2.8A4.5 4.5 0 0 1 6.5 9Z"/><path d="M7 11.5v4m-2-2h4m7-.5h.01m3 2h.01"/></svg></span></button>
+    <section class="mini-game-panel" id="miniGamePanel" role="dialog" aria-label="Click the Target mini-game" aria-hidden="true" hidden>
+      <div class="mini-game-heading"><div><p class="eyebrow">QUICK BREAK</p><h2>Click the Target</h2></div><button class="mini-game-close" id="miniGameClose" type="button" aria-label="Close game">×</button></div>
+      <div class="mini-game-stats"><div><span>TIME</span><strong id="miniGameTimer">15</strong></div><div><span>SCORE</span><strong id="miniGameScore">0</strong></div></div>
+      <div class="mini-game-arena" id="miniGameArena" aria-label="Game area">
+        <button class="mini-game-target" id="miniGameTarget" type="button" aria-label="Hit the target" hidden><span aria-hidden="true"></span></button>
+        <p class="mini-game-message" id="miniGameMessage" role="status" aria-live="polite">Ready when you are.</p>
+      </div>
+      <div class="mini-game-actions"><button class="button button-primary mini-game-start" id="miniGameStart" type="button">Start Game</button><button class="mini-game-sound" id="miniGameSound" type="button" aria-pressed="false" aria-label="Turn sound on">Sound off</button></div>
+      <p class="mini-game-help">Hit the moving target as many times as you can in 15 seconds.</p>
+    </section>
   </div>
   <dialog class="ojt-lightbox" id="ojtLightbox" aria-label="OJT photo viewer">
     <button class="ojt-lightbox-close" type="button" id="ojtLightboxClose" aria-label="Close photo viewer">×</button>

@@ -52,65 +52,34 @@ function renderSkillsGrowthMap() {
     const card = document.createElement("article");
     card.className = "growth-skill";
 
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "growth-skill-toggle";
-    button.setAttribute("aria-expanded", "false");
-    button.setAttribute("aria-controls", `growth-skill-details-${index}`);
+    const heading = document.createElement("div");
+    heading.className = "growth-skill-heading";
 
     const icon = document.createElement("span");
     icon.className = "growth-skill-icon";
     icon.setAttribute("aria-hidden", "true");
     icon.textContent = skill.icon;
 
-    const heading = document.createElement("span");
-    heading.className = "growth-skill-name";
-    heading.textContent = skill.name;
+    const name = document.createElement("h3");
+    name.className = "growth-skill-name";
+    name.textContent = skill.name;
 
     const status = document.createElement("span");
     status.className = `growth-skill-status ${statusClass[skill.status] || "developing"}`;
     status.textContent = skill.status;
 
-    const cue = document.createElement("span");
-    cue.className = "growth-skill-cue";
-    cue.setAttribute("aria-hidden", "true");
-    cue.textContent = "+";
-
-    button.append(icon, heading, status, cue);
+    heading.append(icon, name, status);
 
     const details = document.createElement("ul");
     details.className = "growth-skill-details";
     details.id = `growth-skill-details-${index}`;
-    details.hidden = true;
     skill.abilities.forEach(ability => {
       const item = document.createElement("li");
       item.textContent = ability;
       details.append(item);
     });
 
-    let pinnedOpen = false;
-    let pointerOver = false;
-    const setOpen = open => {
-      button.setAttribute("aria-expanded", String(open));
-      card.classList.toggle("is-open", open);
-      details.hidden = !open;
-    };
-    card.addEventListener("pointerenter", event => {
-      if (event.pointerType === "touch") return;
-      pointerOver = true;
-      if (!pinnedOpen) setOpen(true);
-    });
-    card.addEventListener("pointerleave", event => {
-      if (event.pointerType === "touch") return;
-      pointerOver = false;
-      if (!pinnedOpen) setOpen(false);
-    });
-    button.addEventListener("click", () => {
-      pinnedOpen = !pinnedOpen;
-      setOpen(pinnedOpen || pointerOver);
-    });
-
-    card.append(button, details);
+    card.append(heading, details);
     return card;
   }));
 }
@@ -426,4 +395,128 @@ copyButton.addEventListener("click", async () => {
   } catch {
     feedback.textContent = `Email: ${email} (replace this placeholder before publishing).`;
   }
+});
+
+const gameLauncher = document.getElementById("miniGameLauncher");
+const gamePanel = document.getElementById("miniGamePanel");
+const gameClose = document.getElementById("miniGameClose");
+const gameStart = document.getElementById("miniGameStart");
+const gameSound = document.getElementById("miniGameSound");
+const gameArena = document.getElementById("miniGameArena");
+const gameTarget = document.getElementById("miniGameTarget");
+const gameTimer = document.getElementById("miniGameTimer");
+const gameScore = document.getElementById("miniGameScore");
+const gameMessage = document.getElementById("miniGameMessage");
+let gameInterval = null;
+let gameDeadline = 0;
+let gameRemaining = 15;
+let gamePoints = 0;
+let gameRunning = false;
+let gameSoundEnabled = false;
+let gameAudioContext = null;
+
+function setGamePanelOpen(open) {
+  if (!open && gameRunning) {
+    window.clearInterval(gameInterval);
+    gameInterval = null;
+    gameRunning = false;
+    gameTarget.hidden = true;
+    gameArena.classList.remove("is-active");
+    gameMessage.textContent = "Round stopped. Start a new game when you’re ready.";
+    gameStart.textContent = "Start Game";
+  }
+
+  gamePanel.hidden = !open;
+  gamePanel.setAttribute("aria-hidden", String(!open));
+  gameLauncher.setAttribute("aria-expanded", String(open));
+  if (open) gameStart.focus({ preventScroll: true });
+  else gameLauncher.focus({ preventScroll: true });
+}
+
+function placeGameTarget() {
+  gameTarget.hidden = false;
+  const padding = 7;
+  const maxX = Math.max(padding, gameArena.clientWidth - gameTarget.offsetWidth - padding);
+  const maxY = Math.max(padding, gameArena.clientHeight - gameTarget.offsetHeight - padding);
+  const minX = padding;
+  const minY = padding;
+  gameTarget.style.left = `${minX + Math.random() * (maxX - minX)}px`;
+  gameTarget.style.top = `${minY + Math.random() * (maxY - minY)}px`;
+}
+
+function playTargetSound() {
+  if (!gameSoundEnabled) return;
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return;
+  try {
+    gameAudioContext ||= new AudioContextClass();
+    if (gameAudioContext.state === "suspended") gameAudioContext.resume();
+    const oscillator = gameAudioContext.createOscillator();
+    const gain = gameAudioContext.createGain();
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(680, gameAudioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(940, gameAudioContext.currentTime + .07);
+    gain.gain.setValueAtTime(.06, gameAudioContext.currentTime);
+    gain.gain.exponentialRampToValueAtTime(.001, gameAudioContext.currentTime + .09);
+    oscillator.connect(gain);
+    gain.connect(gameAudioContext.destination);
+    oscillator.start();
+    oscillator.stop(gameAudioContext.currentTime + .09);
+  } catch { /* The game remains playable if browser audio is unavailable. */ }
+}
+
+function finishGame() {
+  if (gameInterval !== null) window.clearInterval(gameInterval);
+  gameInterval = null;
+  gameRunning = false;
+  gameRemaining = 0;
+  gameTimer.textContent = "0";
+  gameTarget.hidden = true;
+  gameArena.classList.remove("is-active");
+  gameMessage.textContent = `Time’s up! Your final score is ${gamePoints}.`;
+  gameStart.textContent = "Play Again";
+}
+
+function startGame() {
+  if (gameRunning) return;
+  if (gameInterval !== null) window.clearInterval(gameInterval);
+  gamePoints = 0;
+  gameRemaining = 15;
+  gameScore.textContent = "0";
+  gameTimer.textContent = "15";
+  gameRunning = true;
+  gameDeadline = Date.now() + 15000;
+  gameMessage.textContent = "Go! Click the target.";
+  gameArena.classList.add("is-active");
+  gameStart.textContent = "Game Running";
+  placeGameTarget();
+
+  gameInterval = window.setInterval(() => {
+    const next = Math.max(0, Math.ceil((gameDeadline - Date.now()) / 1000));
+    if (next !== gameRemaining) {
+      gameRemaining = next;
+      gameTimer.textContent = String(next);
+    }
+    if (next === 0) finishGame();
+  }, 100);
+}
+
+gameLauncher.addEventListener("click", () => setGamePanelOpen(true));
+gameClose.addEventListener("click", () => setGamePanelOpen(false));
+gameStart.addEventListener("click", startGame);
+gameTarget.addEventListener("click", () => {
+  if (!gameRunning) return;
+  gamePoints += 1;
+  gameScore.textContent = String(gamePoints);
+  playTargetSound();
+  placeGameTarget();
+});
+gameSound.addEventListener("click", () => {
+  gameSoundEnabled = !gameSoundEnabled;
+  gameSound.setAttribute("aria-pressed", String(gameSoundEnabled));
+  gameSound.setAttribute("aria-label", gameSoundEnabled ? "Turn sound off" : "Turn sound on");
+  gameSound.textContent = gameSoundEnabled ? "Sound on" : "Sound off";
+});
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && !gamePanel.hidden) setGamePanelOpen(false);
 });
