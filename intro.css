@@ -41,7 +41,7 @@ html.intro-seen .intro-screen { display: none; }
 .envelope-flap { position: absolute; inset: 0; z-index: 4; background: linear-gradient(150deg, #e9dcc2, #d2bd99); clip-path: polygon(0 0, 100% 0, 50% 66%); transform-origin: 50% 0; transform-style: preserve-3d; transition: transform .72s cubic-bezier(.22,.66,.22,1); backface-visibility: hidden; }
 .envelope-seal { position: absolute; top: 38%; left: 50%; z-index: 5; display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid rgba(232,223,200,.55); border-radius: 50%; background: var(--olive); box-shadow: 0 3px 8px rgba(41,43,37,.22); color: var(--paper); font: 600 16px var(--serif); transform: translate(-50%, -50%); transition: opacity .25s ease, transform .25s ease; }
 .intro-screen.is-opening .envelope-flap { transform: rotateX(180deg); }
-.intro-screen.is-opening .envelope-letter { z-index: 7; transform: translateY(-72%); }
+.intro-screen.is-opening .envelope-letter { z-index: 7; transform: translateY(-28%); }
 .intro-screen.is-opening .envelope-seal { opacity: 0; transform: translate(-50%, -50%) scale(.7); }
 
 .intro-letter-wash { position: absolute; top: 50%; left: 50%; z-index: 1; width: min(68vw, 420px); height: min(43vw, 260px); border: 1px solid rgba(92,64,51,.15); background-color: #f4efdf; background-image: repeating-linear-gradient(0deg, transparent 0 6px, rgba(92,64,51,.035) 6px 7px); box-shadow: 0 10px 28px rgba(41,43,37,.18); opacity: 0; transform: translate(-50%, -50%) scale(.86); transition: width .82s cubic-bezier(.2,.72,.2,1), height .82s cubic-bezier(.2,.72,.2,1), opacity .3s ease, border-radius .6s ease; }
@@ -66,3 +66,4 @@ html.intro-seen .intro-screen { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .intro-screen,.envelope-letter,.envelope-flap,.envelope-seal,.intro-letter-wash,.intro-content,.intro-skip { transition-duration: .01ms !important; }
 }
+
