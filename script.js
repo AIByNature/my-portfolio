@@ -2,6 +2,22 @@ const tabs = [...document.querySelectorAll(".nav-tab")];
 const pages = [...document.querySelectorAll(".page")];
 const nav = document.getElementById("navTabs");
 const menuToggle = document.getElementById("menuToggle");
+const navBackdrop = document.getElementById("navBackdrop");
+
+function setNavigationOpen(open, returnFocus = true) {
+  const wasOpen = nav.classList.contains("open");
+  nav.classList.toggle("open", open);
+  nav.inert = !open;
+  nav.setAttribute("aria-hidden", String(!open));
+  menuToggle.setAttribute("aria-expanded", String(open));
+  menuToggle.setAttribute("aria-label", `${open ? "Close" : "Open"} navigation menu`);
+  document.body.classList.toggle("nav-open", open);
+  navBackdrop.classList.toggle("visible", open);
+  navBackdrop.setAttribute("aria-hidden", String(!open));
+  navBackdrop.tabIndex = open ? 0 : -1;
+  if (open) nav.querySelector(".nav-tab")?.focus();
+  else if (returnFocus && wasOpen) menuToggle.focus();
+}
 
 function showPage(pageId) {
   const target = document.getElementById(pageId);
@@ -12,8 +28,7 @@ function showPage(pageId) {
     tab.classList.toggle("active", active);
     tab.setAttribute("aria-current", active ? "page" : "false");
   });
-  nav.classList.remove("open");
-  menuToggle.setAttribute("aria-expanded", "false");
+  setNavigationOpen(false);
   window.scrollTo({ top: 0, behavior: "smooth" });
   history.replaceState(null, "", `#${pageId}`);
 }
@@ -144,9 +159,10 @@ profileCarousel.addEventListener("click", event => {
 buildProfilePagination();
 renderProfileCarousel(0);
 
-menuToggle.addEventListener("click", () => {
-  const open = nav.classList.toggle("open");
-  menuToggle.setAttribute("aria-expanded", String(open));
+menuToggle.addEventListener("click", () => setNavigationOpen(menuToggle.getAttribute("aria-expanded") !== "true", false));
+navBackdrop.addEventListener("click", () => setNavigationOpen(false));
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && menuToggle.getAttribute("aria-expanded") === "true") setNavigationOpen(false);
 });
 
 const themeToggle = document.getElementById("themeToggle");

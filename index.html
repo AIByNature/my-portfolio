@@ -13,8 +13,8 @@
   <div class="site-shell">
     <header class="topbar">
       <a class="brand" href="#home" aria-label="Go to home"><span class="brand-mark">T</span><span>TAN<span class="brand-dot">.</span></span></a>
-      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
-      <nav class="nav-tabs" id="navTabs" aria-label="Main navigation">
+      <nav class="nav-tabs" id="navTabs" aria-label="Main navigation" aria-hidden="true" inert>
+        <div class="nav-drawer-heading"><span>INDEX</span><span>01 — 06</span></div>
         <button class="nav-tab active" data-page="home">Home</button>
         <button class="nav-tab" data-page="about">About</button>
         <button class="nav-tab" data-page="skills">Skills</button>
@@ -23,6 +23,10 @@
         <button class="nav-tab" data-page="contact">Contact</button>
       </nav>
       <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to Dark Mode" title="Switch to Dark Mode" aria-pressed="false"></button>
+      <button class="menu-toggle" id="menuToggle" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="navTabs">
+        <span></span><span></span><span></span>
+      </button>
+      <button class="nav-backdrop" id="navBackdrop" type="button" aria-label="Close navigation menu" aria-hidden="true" tabindex="-1"></button>
     </header>
 
     <main>
