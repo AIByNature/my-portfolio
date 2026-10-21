@@ -99,67 +99,9 @@
         <p class="disclaimer">Update dates, role names, and descriptions to match your official records before publishing.</p>
       </section>
 
-      <section class="page ojt-page" id="ojt" aria-labelledby="ojt-title">
-        <div class="section-heading ojt-heading">
-          <p class="eyebrow">04 — FIELD NOTES / PROFESSIONAL DEVELOPMENT</p>
-          <h2 id="ojt-title">My OJT <span>Journey.</span></h2>
-          <p class="section-intro">A local record of Information Technology On-the-Job Training at PLV.</p>
-        </div>
-        <div class="ojt-intro">
-          <span class="card-kicker" id="ojtOrganization">PAMANTASAN NG LUNGSOD NG VALENZUELA (PLV)</span>
-          <p><strong id="ojtExperience">Information Technology On-the-Job Training</strong> · Duty period: <span id="ojtPeriodIntro">June 9 to September 28, 2026</span>. Recorded time is shown as listed in the source summary; its decimal-style notation has not been reinterpreted.</p>
-        </div>
-        <section class="ojt-dashboard" aria-label="OJT overview">
-          <article class="ojt-metric"><span>RECORDED DUTY ENTRIES</span><strong id="ojtEntryCount">65</strong></article>
-          <article class="ojt-metric"><span>RECORDED TOTAL HOURS</span><strong id="ojtRecordedTotal">496.03</strong><small>Source notation preserved</small></article>
-          <article class="ojt-metric"><span>DUTY PERIOD</span><strong class="ojt-period" id="ojtDutyPeriod">June 9 – September 28, 2026</strong></article>
-          <article class="ojt-metric"><span>DOCUMENTED ACTIVITY AREAS</span><strong id="ojtActivitiesCount">15</strong></article>
-        </section>
-        <section class="ojt-block" aria-labelledby="ojt-attendance-title">
-          <div class="ojt-block-heading"><div><p class="eyebrow">SOURCE RECORD</p><h3 id="ojt-attendance-title">Attendance log</h3></div><span class="ojt-count" id="ojtAttendanceCount" aria-live="polite">0 OF 65 ROWS LOADED</span></div>
-          <p class="ojt-attendance-note" id="ojtAttendanceNote">The attendance PDF was not available in the project files. The total above is preserved as provided; individual rows will appear after verified records are added to <code>ojt-data.js</code>.</p>
-          <div class="ojt-attendance-tools">
-            <label>Search by duty number or date <input type="search" id="ojtAttendanceSearch" placeholder="e.g. 12 or June 9" autocomplete="off"></label>
-            <label>Month <select id="ojtMonthFilter"><option value="all">All months</option></select></label>
-          </div>
-          <div class="ojt-table-wrap" role="region" aria-label="Attendance records" tabindex="0">
-            <table class="ojt-attendance-table"><thead><tr><th scope="col">DUTY</th><th scope="col">DATE</th><th scope="col">TIME IN</th><th scope="col">TIME OUT</th><th scope="col">RECORDED TIME</th></tr></thead><tbody id="ojtAttendanceRows"></tbody></table>
-          </div>
-          <div class="ojt-pagination"><button type="button" id="ojtPreviousPage" disabled>Previous</button><span id="ojtPageStatus" aria-live="polite">No verified rows</span><button type="button" id="ojtNextPage" disabled>Next</button></div>
-        </section>
-        <section class="ojt-block" aria-labelledby="ojt-activities-title">
-          <div class="ojt-block-heading"><div><p class="eyebrow">UNDATED ACTIVITY SUMMARIES</p><h3 id="ojt-activities-title">Work and experience</h3></div><span class="ojt-count">NO DAILY DATES ASSIGNED</span></div>
-          <p class="ojt-attendance-note">These activities are listed as general experience summaries. No date or week is assigned without a supporting record.</p>
-          <div class="ojt-activity-grid" id="ojtActivities"></div>
-        </section>
-        <section class="ojt-block" aria-labelledby="ojt-skills-title">
-          <div class="ojt-block-heading"><div><p class="eyebrow">PRACTICED DURING TRAINING</p><h3 id="ojt-skills-title">Skills developed</h3></div></div><div class="ojt-skills" id="ojtSkills"></div>
-        </section>
-        <section class="ojt-block" aria-labelledby="ojt-reflections-title">
-          <div class="ojt-block-heading"><div><p class="eyebrow">PERSONAL NOTES</p><h3 id="ojt-reflections-title">Reflections and learning</h3></div></div>
-          <p class="ojt-attendance-note">These fields are for your own reflections. Saved entries stay in this browser; copy them into <code>ojt-data.js</code> to keep them in the project.</p>
-          <div class="ojt-reflection-editor">
-            <label>Overall experience<textarea data-reflection="overallExperience" placeholder="Add your reflection for this period."></textarea></label>
-            <label>Lessons learned<textarea data-reflection="lessonsLearned" placeholder="Add lessons you want to record."></textarea></label>
-            <label>Challenges<textarea data-reflection="challenges" placeholder="Add challenges you want to record."></textarea></label>
-            <label>Future improvements<textarea data-reflection="futureImprovements" placeholder="Add areas you want to improve."></textarea></label>
-            <button type="button" class="ojt-refresh" id="ojtSaveReflections">Save reflections</button><span id="ojtReflectionStatus" role="status" aria-live="polite"></span>
-          </div>
-        </section>
-        <section class="ojt-block" aria-labelledby="ojt-gallery-title">
-          <div class="ojt-block-heading"><div><p class="eyebrow">DOCUMENTATION &amp; EVIDENCE</p><h3 id="ojt-gallery-title">OJT documentation photos</h3></div></div>
-          <details class="ojt-docs-details" open>
-            <summary><span>Browse photo documentation</span><span id="ojtPhotoLogCount">PHOTO LOG</span></summary>
-          <div class="ojt-docs-carousel" id="ojtDocsCarousel" role="region" aria-label="OJT photo documentation" tabindex="0">
-            <button class="ojt-docs-arrow" id="ojtDocsPrevious" type="button" aria-label="Previous OJT photo" title="Previous photo">&#8592;</button>
-            <div class="ojt-docs-window" id="ojtDocsWindow"><div class="ojt-docs-track" id="ojtDocsTrack" aria-live="polite"></div></div>
-            <button class="ojt-docs-arrow" id="ojtDocsNext" type="button" aria-label="Next OJT photo" title="Next photo">&#8594;</button>
-          </div>
-          <div class="ojt-docs-pagination"><div class="ojt-docs-dots" id="ojtDocsDots" role="group" aria-label="Choose an OJT photo"></div><span class="ojt-docs-position" id="ojtDocsPosition" aria-live="polite">00 / 00</span></div>
-          </details>
-        </section>
-      </section>
-<section class="page" id="projects" aria-labelledby="projects-title">
+      <section class="page ojt-page" id="ojt" aria-label="OJT photo gallery">
+        <div class="ojt-polaroid-gallery" id="ojtPhotoGallery" role="region" aria-label="OJT photographs"></div>
+      </section><section class="page" id="projects" aria-labelledby="projects-title">
         <div class="section-heading"><p class="eyebrow">05 — SELECTED WORK</p><h2 id="projects-title">Projects & <span>outputs.</span></h2><p class="section-intro">A selection of academic work, design outputs, and collaborative projects. Replace each placeholder with your real work.</p></div>
         <div class="projects-grid">
           <article class="project-card"><div class="project-visual visual-olive"><span>01</span><div class="visual-shape shape-one"></div><div class="visual-word">CYBER<br>DEFENDER</div></div><div class="project-info"><div class="project-type">CAPSTONE / GAME DESIGN</div><h3>CyberDefender</h3><p>A visual novel-style cybersecurity awareness game featuring story-driven choices and digital safety scenarios.</p><div class="tags"><span>Visual novel</span><span>Documentation</span><span>Cyber awareness</span></div></div></article>
@@ -175,11 +117,11 @@
     </main>
     <footer class="footer"><span>© <span id="year"></span> [Your Name]</span><span>MADE WITH CURIOSITY & CARE</span><button class="back-top" data-go="home">BACK TO HOME ↑</button></footer>
   </div>
-  <dialog class="ojt-lightbox" id="ojtLightbox" aria-label="Activity photo viewer">
-    <div class="ojt-lightbox-header"><span id="ojtLightboxLabel">ACTIVITY PHOTO</span><button type="button" id="ojtLightboxClose" aria-label="Close photo viewer">×</button></div>
-    <div class="ojt-lightbox-view"><button type="button" id="ojtLightboxPrevious" aria-label="Previous photo">‹</button><div class="ojt-lightbox-image-wrap"><img id="ojtLightboxImage" alt=""><div class="ojt-photo-placeholder" id="ojtLightboxPlaceholder">PHOTO UNAVAILABLE</div></div><button type="button" id="ojtLightboxNext" aria-label="Next photo">›</button></div>
-    <p class="ojt-lightbox-caption" id="ojtLightboxCaption"></p>
-    <span class="ojt-lightbox-count" id="ojtLightboxCount"></span>
+  <dialog class="ojt-lightbox" id="ojtLightbox" aria-label="OJT photo viewer">
+    <button class="ojt-lightbox-close" type="button" id="ojtLightboxClose" aria-label="Close photo viewer">×</button>
+    <button class="ojt-lightbox-arrow ojt-lightbox-previous" type="button" id="ojtLightboxPrevious" aria-label="Previous photo">‹</button>
+    <div class="ojt-lightbox-image-wrap"><img id="ojtLightboxImage" alt=""></div>
+    <button class="ojt-lightbox-arrow ojt-lightbox-next" type="button" id="ojtLightboxNext" aria-label="Next photo">›</button>
   </dialog>
 </body>
 </html>

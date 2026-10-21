@@ -518,3 +518,47 @@
   .ojt-docs-track { transition: none; }
   .ojt-docs-action,.ojt-docs-arrow,.ojt-docs-dot { transition: none; }
 }
+
+/* OJT photo-only Polaroid gallery */
+.ojt-page { min-width: 0; padding: clamp(16px, 3vw, 38px) 0 60px; }
+.ojt-polaroid-gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 172px), 1fr)); align-items: start; gap: clamp(18px, 2.3vw, 34px); width: min(1500px, 100%); margin: 0 auto; padding: clamp(12px, 2vw, 28px); }
+.ojt-polaroid { position: relative; display: block; width: 100%; min-width: 0; padding: 9px 9px 28px; border: 1px solid rgba(62,54,42,.16); border-radius: 2px; background: #f6f3e9; box-shadow: 0 3px 7px rgba(32,31,26,.18), 0 12px 20px rgba(32,31,26,.1); cursor: zoom-in; transform: rotate(var(--polaroid-tilt, 0deg)); transition: transform .24s ease, box-shadow .24s ease; }
+.ojt-polaroid img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: #d8d2c3; }
+.ojt-polaroid img[hidden] { display: none; }
+.ojt-polaroid.is-missing { min-height: 130px; }
+.ojt-polaroid:nth-child(8n + 1) { --polaroid-tilt: -2.1deg; }
+.ojt-polaroid:nth-child(8n + 2) { --polaroid-tilt: 1.4deg; }
+.ojt-polaroid:nth-child(8n + 3) { --polaroid-tilt: -.7deg; }
+.ojt-polaroid:nth-child(8n + 4) { --polaroid-tilt: 2.2deg; }
+.ojt-polaroid:nth-child(8n + 5) { --polaroid-tilt: 1deg; }
+.ojt-polaroid:nth-child(8n + 6) { --polaroid-tilt: -1.6deg; }
+.ojt-polaroid:nth-child(8n + 7) { --polaroid-tilt: .5deg; }
+.ojt-polaroid:nth-child(8n) { --polaroid-tilt: -1deg; }
+.ojt-polaroid:hover { z-index: 2; box-shadow: 0 8px 14px rgba(32,31,26,.2), 0 20px 28px rgba(32,31,26,.16); transform: translateY(-6px) rotate(0) scale(1.035); }
+.ojt-polaroid:focus-visible { z-index: 3; outline: 3px solid var(--olive2); outline-offset: 4px; transform: rotate(0) scale(1.025); }
+
+.ojt-lightbox { position: fixed; display: grid; grid-template-columns: 48px minmax(0,1fr) 48px; align-items: center; gap: 12px; width: min(1100px, calc(100vw - 28px)); max-width: none; max-height: calc(100dvh - 28px); margin: auto; padding: 26px 20px; overflow: visible; border: 0; background: transparent; color: #f6f3e9; box-shadow: none; opacity: 0; transform: scale(.975); transition: opacity .2s ease, transform .2s ease, overlay .2s ease allow-discrete, display .2s ease allow-discrete; }
+.ojt-lightbox[open] { opacity: 1; transform: scale(1); }
+.ojt-lightbox::backdrop { background: rgba(19,21,17,.88); backdrop-filter: blur(5px); transition: background-color .2s ease, backdrop-filter .2s ease; }
+.ojt-lightbox[open]::backdrop { background: rgba(19,21,17,.88); }
+@starting-style { .ojt-lightbox[open] { opacity: 0; transform: scale(.975); } .ojt-lightbox[open]::backdrop { background: rgba(19,21,17,0); } }
+.ojt-lightbox-image-wrap { display: grid; place-items: center; min-width: 0; min-height: 0; max-height: calc(100dvh - 80px); overflow: hidden; background: transparent; }
+.ojt-lightbox-image-wrap img { display: block; max-width: 100%; max-height: calc(100dvh - 80px); object-fit: contain; box-shadow: 0 18px 58px rgba(0,0,0,.45); }
+.ojt-lightbox-image-wrap img[hidden] { display: none; }
+.ojt-lightbox-close,.ojt-lightbox-arrow { display: grid; place-items: center; width: 42px; height: 42px; padding: 0; border: 1px solid rgba(246,243,233,.44); border-radius: 50%; background: rgba(31,34,28,.72); color: #f6f3e9; font: 28px/1 var(--sans); cursor: pointer; transition: background .18s ease, transform .18s ease; }
+.ojt-lightbox-close { position: absolute; top: -2px; right: 0; z-index: 1; }
+.ojt-lightbox-arrow:hover,.ojt-lightbox-close:hover { background: rgba(85,107,47,.95); transform: scale(1.06); }
+.ojt-lightbox-close:focus-visible,.ojt-lightbox-arrow:focus-visible { outline: 2px solid #f6f3e9; outline-offset: 3px; }
+
+@media (max-width: 700px) {
+  .ojt-polaroid-gallery { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 17px 13px; padding: 14px 12px; }
+  .ojt-polaroid { padding: 6px 6px 20px; }
+  .ojt-lightbox { grid-template-columns: 34px minmax(0,1fr) 34px; gap: 5px; width: calc(100vw - 12px); padding: 34px 4px 12px; }
+  .ojt-lightbox-close,.ojt-lightbox-arrow { width: 34px; height: 38px; }
+  .ojt-lightbox-close { top: -5px; right: 3px; }
+  .ojt-lightbox-image-wrap img { max-height: calc(100dvh - 90px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ojt-polaroid,.ojt-lightbox,.ojt-lightbox::backdrop,.ojt-lightbox-close,.ojt-lightbox-arrow { transition: none; }
+}
