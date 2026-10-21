@@ -152,9 +152,11 @@ main {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  width: 36px;
+  height: 36px;
   flex: 0 0 auto;
-  padding: 9px 12px;
+  padding: 0;
+  border-radius: 50%;
   border: 1px solid var(--line);
   background: transparent;
   color: var(--ink);
@@ -174,8 +176,13 @@ main {
 }
 
 .theme-icon {
-  font-size: 16px;
-  line-height: 1;
+  display: block;
+  width: 17px;
+  height: 17px;
+}
+
+.theme-icon[hidden] {
+  display: none;
 }
 
 :root[data-theme="dark"] {

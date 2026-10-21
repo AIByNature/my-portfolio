@@ -32,10 +32,12 @@ if (savedTheme === "dark") document.documentElement.dataset.theme = "dark";
 
 function updateThemeButton() {
   const isDark = document.documentElement.dataset.theme === "dark";
+  const action = `Switch to ${isDark ? "light" : "dark"} mode`;
   themeToggle.setAttribute("aria-pressed", String(isDark));
-  themeToggle.setAttribute("aria-label", `Switch to ${isDark ? "light" : "dark"} mode`);
-  themeToggle.querySelector(".theme-icon").textContent = isDark ? "☀" : "☾";
-  themeToggle.querySelector(".theme-label").textContent = isDark ? "Light mode" : "Dark mode";
+  themeToggle.setAttribute("aria-label", action);
+  themeToggle.setAttribute("title", action);
+  themeToggle.querySelector(".theme-sun").hidden = !isDark;
+  themeToggle.querySelector(".theme-moon").hidden = isDark;
 }
 
 updateThemeButton();
