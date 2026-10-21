@@ -147,16 +147,16 @@
   const lightboxPrevious = document.getElementById("ojtLightboxPrevious");
   const lightboxNext = document.getElementById("ojtLightboxNext");
   let activePhoto = 0;
-  const photoWheel = document.getElementById("ojtPhotoWheel");
-  const photoWheelStage = document.getElementById("ojtPhotoWheelStage");
-  const photoWheelCounter = document.getElementById("ojtWheelCounter");
-  const photoWheelAngle = 34;
+  const experienceItems = Array.isArray(data.activities) ? data.activities : [];
+  const experienceWheel = document.getElementById("ojtExperienceWheel");
+  const experienceWheelStage = document.getElementById("ojtExperienceWheelStage");
+  const experienceWheelCounter = document.getElementById("ojtExperienceCounter");
+  const experienceWheelAngle = 34;
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-  let wheelIndex = 0;
-  let wheelAnimating = false;
-  let queuedWheelSteps = 0;
-  let queuedPhotoTarget = null;
-  let queuedPhotoOpen = false;
+  let experienceIndex = 0;
+  let experienceAnimating = false;
+  let queuedExperienceSteps = 0;
+  let queuedExperienceTarget = null;
 
   docsTrack.innerHTML = photoResources.map((photo, index) => `
     <button class="ojt-polaroid" type="button" data-photo-index="${index}" aria-label="Open OJT photo ${index + 1}">
@@ -179,125 +179,112 @@
     if (!lightbox.open) lightbox.showModal();
   }
 
-  function renderPhotoWheel() {
-    if (!photoResources.length) {
-      photoWheelStage.innerHTML = "";
-      photoWheelCounter.textContent = "00 / 00";
+  function renderExperienceWheel() {
+    if (!experienceItems.length) {
+      experienceWheelStage.innerHTML = "";
+      experienceWheelCounter.textContent = "00 / 00";
       return;
     }
-    photoWheelCounter.textContent = `${String(wheelIndex + 1).padStart(2, "0")} / ${String(photoResources.length).padStart(2, "0")}`;
-    photoWheelStage.innerHTML = Array.from({ length: 7 }, (_, slot) => {
+    experienceWheelCounter.textContent = `${String(experienceIndex + 1).padStart(2, "0")} / ${String(experienceItems.length).padStart(2, "0")}`;
+    experienceWheelStage.innerHTML = Array.from({ length: 7 }, (_, slot) => {
       const offset = slot - 3;
-      const index = (wheelIndex + offset + photoResources.length) % photoResources.length;
-      const photo = photoResources[index];
+      const index = (experienceIndex + offset + experienceItems.length) % experienceItems.length;
+      const activity = experienceItems[index];
       const tilt = offset === 0 ? 0 : (offset % 2 ? -1.4 : 1.2);
       const opacity = Math.max(.12, 1 - Math.abs(offset) * .23);
-      return `<button class="ojt-wheel-card${offset === 0 ? " is-active" : ""}" type="button" data-wheel-photo="${index}" aria-label="Bring OJT photo ${index + 1} to the front and open it" style="--wheel-angle:${-offset * photoWheelAngle}deg;--wheel-tilt:${tilt}deg;--wheel-opacity:${opacity}">
-        <img src="${escapeHTML(photo.src)}" alt="${escapeHTML(photo.alt)}" loading="${Math.abs(offset) < 2 ? "eager" : "lazy"}" decoding="async">
+      return `<button class="ojt-experience-card${offset === 0 ? " is-active" : ""}" type="button" data-experience-index="${index}" aria-label="Show work experience ${index + 1}: ${escapeHTML(activity.title)}" style="--wheel-angle:${-offset * experienceWheelAngle}deg;--wheel-tilt:${tilt}deg;--wheel-opacity:${opacity}">
+        <span class="ojt-experience-category">${escapeHTML(activity.category || "OJT EXPERIENCE")}</span>
+        <span class="ojt-experience-number">${String(index + 1).padStart(2, "0")}</span>
+        <span class="ojt-experience-title">${escapeHTML(activity.title)}</span>
+        ${activity.description ? `<span class="ojt-experience-description">${escapeHTML(activity.description)}</span>` : ""}
+        <span class="ojt-experience-foot">UNDATED ACTIVITY SUMMARY</span>
       </button>`;
     }).join("");
   }
 
-  function rotatePhotoWheel(steps, openWhenFinished = false) {
-    if (!photoResources.length) return;
-    if (wheelAnimating) {
-      queuedWheelSteps = Math.max(-8, Math.min(8, queuedWheelSteps + steps));
+  function rotateExperienceWheel(steps) {
+    if (!experienceItems.length) return;
+    if (experienceAnimating) {
+      queuedExperienceSteps = Math.max(-8, Math.min(8, queuedExperienceSteps + steps));
       return;
     }
-    if (!steps) {
-      if (openWhenFinished) showPhoto(wheelIndex);
-      return;
-    }
+    if (!steps) return;
 
-    wheelAnimating = true;
+    experienceAnimating = true;
     const duration = reducedMotion.matches ? 0 : Math.min(820, 380 + Math.abs(steps) * 90);
-    photoWheelStage.style.transition = `transform ${duration}ms cubic-bezier(.22,.68,.22,1)`;
-    requestAnimationFrame(() => { photoWheelStage.style.transform = `rotateX(${steps * photoWheelAngle}deg)`; });
+    experienceWheelStage.style.transition = `transform ${duration}ms cubic-bezier(.22,.68,.22,1)`;
+    requestAnimationFrame(() => { experienceWheelStage.style.transform = `rotateX(${steps * experienceWheelAngle}deg)`; });
 
     let finished = false;
     const finishRotation = () => {
       if (finished) return;
       finished = true;
       window.clearTimeout(fallbackTimer);
-      wheelIndex = (wheelIndex + steps + photoResources.length) % photoResources.length;
-      renderPhotoWheel();
-      photoWheelStage.style.transition = "none";
-      photoWheelStage.style.transform = "rotateX(0deg)";
-      photoWheelStage.offsetHeight;
-      requestAnimationFrame(() => { photoWheelStage.style.transition = ""; });
-      wheelAnimating = false;
-      const shouldOpenPhoto = openWhenFinished || queuedPhotoOpen;
-      queuedPhotoOpen = false;
+      experienceIndex = (experienceIndex + steps + experienceItems.length) % experienceItems.length;
+      renderExperienceWheel();
+      experienceWheelStage.style.transition = "none";
+      experienceWheelStage.style.transform = "rotateX(0deg)";
+      experienceWheelStage.offsetHeight;
+      requestAnimationFrame(() => { experienceWheelStage.style.transition = ""; });
+      experienceAnimating = false;
 
-      if (queuedPhotoTarget !== null) {
-        const target = queuedPhotoTarget;
-        queuedPhotoTarget = null;
-        movePhotoTo(target, shouldOpenPhoto);
-      } else if (queuedWheelSteps) {
-        const nextStep = Math.sign(queuedWheelSteps);
-        queuedWheelSteps -= nextStep;
-        rotatePhotoWheel(nextStep, shouldOpenPhoto);
-      } else if (shouldOpenPhoto) {
-        showPhoto(wheelIndex);
+      if (queuedExperienceTarget !== null) {
+        const target = queuedExperienceTarget;
+        queuedExperienceTarget = null;
+        moveExperienceTo(target);
+      } else if (queuedExperienceSteps) {
+        const nextStep = Math.sign(queuedExperienceSteps);
+        queuedExperienceSteps -= nextStep;
+        rotateExperienceWheel(nextStep);
       }
     };
-    photoWheelStage.addEventListener("transitionend", event => {
-      if (event.target === photoWheelStage && event.propertyName === "transform") finishRotation();
+    experienceWheelStage.addEventListener("transitionend", event => {
+      if (event.target === experienceWheelStage && event.propertyName === "transform") finishRotation();
     }, { once: true });
     const fallbackTimer = window.setTimeout(finishRotation, duration + 80);
   }
 
-  function movePhotoTo(target, openWhenFinished = true) {
-    if (!photoResources.length) return;
-    if (wheelAnimating) {
-      queuedPhotoTarget = target;
-      queuedPhotoOpen = openWhenFinished;
+  function moveExperienceTo(target) {
+    if (!experienceItems.length) return;
+    if (experienceAnimating) {
+      queuedExperienceTarget = target;
       return;
     }
-    const count = photoResources.length;
-    const forward = (target - wheelIndex + count) % count;
+    const count = experienceItems.length;
+    const forward = (target - experienceIndex + count) % count;
     const steps = forward > count / 2 ? forward - count : forward;
-    rotatePhotoWheel(steps, openWhenFinished);
+    rotateExperienceWheel(steps);
   }
 
-  renderPhotoWheel();
-  photoWheel.addEventListener("wheel", event => {
+  renderExperienceWheel();
+  experienceWheel.addEventListener("wheel", event => {
     if (Math.abs(event.deltaY) < Math.abs(event.deltaX) * .6) return;
     event.preventDefault();
-    rotatePhotoWheel(Math.sign(event.deltaY));
+    rotateExperienceWheel(Math.sign(event.deltaY));
   }, { passive: false });
-  photoWheel.addEventListener("keydown", event => {
+  experienceWheel.addEventListener("keydown", event => {
     if (["ArrowDown", "ArrowRight"].includes(event.key)) {
       event.preventDefault();
-      rotatePhotoWheel(1);
+      rotateExperienceWheel(1);
     } else if (["ArrowUp", "ArrowLeft"].includes(event.key)) {
       event.preventDefault();
-      rotatePhotoWheel(-1);
+      rotateExperienceWheel(-1);
     }
   });
   let touchStartY = null;
-  let suppressWheelClick = false;
-  photoWheel.addEventListener("touchstart", event => { touchStartY = event.changedTouches[0]?.clientY ?? null; }, { passive: true });
-  photoWheel.addEventListener("touchend", event => {
+  experienceWheel.addEventListener("touchstart", event => { touchStartY = event.changedTouches[0]?.clientY ?? null; }, { passive: true });
+  experienceWheel.addEventListener("touchend", event => {
     if (touchStartY === null) return;
     const delta = touchStartY - (event.changedTouches[0]?.clientY ?? touchStartY);
-    if (Math.abs(delta) > 28) {
-      suppressWheelClick = true;
-      window.setTimeout(() => { suppressWheelClick = false; }, 450);
-      rotatePhotoWheel(Math.sign(delta));
-    }
+    if (Math.abs(delta) > 28) rotateExperienceWheel(Math.sign(delta));
     touchStartY = null;
   }, { passive: true });
-  photoWheel.addEventListener("click", event => {
-    if (suppressWheelClick) return;
-    const card = event.target.closest("[data-wheel-photo]");
-    if (card) movePhotoTo(Number(card.dataset.wheelPhoto));
+  experienceWheel.addEventListener("click", event => {
+    const card = event.target.closest("[data-experience-index]");
+    if (card) moveExperienceTo(Number(card.dataset.experienceIndex));
   });
-  document.getElementById("ojtWheelPrevious").addEventListener("click", () => rotatePhotoWheel(-1));
-  document.getElementById("ojtWheelNext").addEventListener("click", () => rotatePhotoWheel(1));
-  photoWheel.addEventListener("error", event => {
-    if (event.target instanceof HTMLImageElement) event.target.hidden = true;
-  }, true);
+  document.getElementById("ojtExperiencePrevious").addEventListener("click", () => rotateExperienceWheel(-1));
+  document.getElementById("ojtExperienceNext").addEventListener("click", () => rotateExperienceWheel(1));
 
   docsTrack.addEventListener("click", event => {
     const opener = event.target.closest("[data-photo-index]");
