@@ -148,15 +148,16 @@
   const lightboxNext = document.getElementById("ojtLightboxNext");
   let activePhoto = 0;
   const experienceItems = Array.isArray(data.activities) ? data.activities : [];
+  const experienceGroupSize = 3;
+  const experienceGroupCount = Math.ceil(experienceItems.length / experienceGroupSize);
   const experienceWheel = document.getElementById("ojtExperienceWheel");
   const experienceWheelStage = document.getElementById("ojtExperienceWheelStage");
   const experienceWheelCounter = document.getElementById("ojtExperienceCounter");
   const experienceWheelAngle = 34;
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-  let experienceIndex = 0;
+  let experienceGroup = 0;
   let experienceAnimating = false;
   let queuedExperienceSteps = 0;
-  let queuedExperienceTarget = null;
 
   docsTrack.innerHTML = photoResources.map((photo, index) => `
     <button class="ojt-polaroid" type="button" data-photo-index="${index}" aria-label="Open OJT photo ${index + 1}">
@@ -185,20 +186,27 @@
       experienceWheelCounter.textContent = "00 / 00";
       return;
     }
-    experienceWheelCounter.textContent = `${String(experienceIndex + 1).padStart(2, "0")} / ${String(experienceItems.length).padStart(2, "0")}`;
-    experienceWheelStage.innerHTML = Array.from({ length: 7 }, (_, slot) => {
-      const offset = slot - 3;
-      const index = (experienceIndex + offset + experienceItems.length) % experienceItems.length;
-      const activity = experienceItems[index];
-      const tilt = offset === 0 ? 0 : (offset % 2 ? -1.4 : 1.2);
+    const firstActivity = experienceGroup * experienceGroupSize;
+    const lastActivity = Math.min(firstActivity + experienceGroupSize, experienceItems.length);
+    experienceWheelCounter.textContent = `${String(firstActivity + 1).padStart(2, "0")}–${String(lastActivity).padStart(2, "0")} / ${String(experienceItems.length).padStart(2, "0")}`;
+    experienceWheelStage.innerHTML = Array.from({ length: experienceGroupCount }, (_, slot) => {
+      const offset = slot - Math.floor(experienceGroupCount / 2);
+      const group = (experienceGroup + offset + experienceGroupCount) % experienceGroupCount;
+      const start = group * experienceGroupSize;
       const opacity = Math.max(.12, 1 - Math.abs(offset) * .23);
-      return `<button class="ojt-experience-card${offset === 0 ? " is-active" : ""}" type="button" data-experience-index="${index}" aria-label="Show work experience ${index + 1}: ${escapeHTML(activity.title)}" style="--wheel-angle:${-offset * experienceWheelAngle}deg;--wheel-tilt:${tilt}deg;--wheel-opacity:${opacity}">
-        <span class="ojt-experience-category">${escapeHTML(activity.category || "OJT EXPERIENCE")}</span>
-        <span class="ojt-experience-number">${String(index + 1).padStart(2, "0")}</span>
-        <span class="ojt-experience-title">${escapeHTML(activity.title)}</span>
-        ${activity.description ? `<span class="ojt-experience-description">${escapeHTML(activity.description)}</span>` : ""}
-        <span class="ojt-experience-foot">UNDATED ACTIVITY SUMMARY</span>
-      </button>`;
+      const cards = experienceItems.slice(start, start + experienceGroupSize).map((activity, itemOffset) => {
+        const index = start + itemOffset;
+        return `<article class="ojt-experience-card">
+          <span class="ojt-experience-category">${escapeHTML(activity.category || "OJT EXPERIENCE")}</span>
+          <span class="ojt-experience-number">${String(index + 1).padStart(2, "0")}</span>
+          <h4 class="ojt-experience-title">${escapeHTML(activity.title)}</h4>
+          ${activity.description ? `<p class="ojt-experience-description">${escapeHTML(activity.description)}</p>` : ""}
+          <span class="ojt-experience-foot">UNDATED ACTIVITY SUMMARY</span>
+        </article>`;
+      }).join("");
+      const groupStart = start + 1;
+      const groupEnd = Math.min(start + experienceGroupSize, experienceItems.length);
+      return `<div class="ojt-experience-group${offset === 0 ? " is-active" : ""}" role="group" aria-label="Activities ${groupStart} through ${groupEnd}" style="--wheel-angle:${-offset * experienceWheelAngle}deg;--wheel-opacity:${opacity}"><div class="ojt-experience-row">${cards}</div></div>`;
     }).join("");
   }
 
@@ -220,7 +228,7 @@
       if (finished) return;
       finished = true;
       window.clearTimeout(fallbackTimer);
-      experienceIndex = (experienceIndex + steps + experienceItems.length) % experienceItems.length;
+      experienceGroup = (experienceGroup + steps + experienceGroupCount) % experienceGroupCount;
       renderExperienceWheel();
       experienceWheelStage.style.transition = "none";
       experienceWheelStage.style.transform = "rotateX(0deg)";
@@ -228,11 +236,7 @@
       requestAnimationFrame(() => { experienceWheelStage.style.transition = ""; });
       experienceAnimating = false;
 
-      if (queuedExperienceTarget !== null) {
-        const target = queuedExperienceTarget;
-        queuedExperienceTarget = null;
-        moveExperienceTo(target);
-      } else if (queuedExperienceSteps) {
+      if (queuedExperienceSteps) {
         const nextStep = Math.sign(queuedExperienceSteps);
         queuedExperienceSteps -= nextStep;
         rotateExperienceWheel(nextStep);
@@ -242,18 +246,6 @@
       if (event.target === experienceWheelStage && event.propertyName === "transform") finishRotation();
     }, { once: true });
     const fallbackTimer = window.setTimeout(finishRotation, duration + 80);
-  }
-
-  function moveExperienceTo(target) {
-    if (!experienceItems.length) return;
-    if (experienceAnimating) {
-      queuedExperienceTarget = target;
-      return;
-    }
-    const count = experienceItems.length;
-    const forward = (target - experienceIndex + count) % count;
-    const steps = forward > count / 2 ? forward - count : forward;
-    rotateExperienceWheel(steps);
   }
 
   renderExperienceWheel();
@@ -279,10 +271,6 @@
     if (Math.abs(delta) > 28) rotateExperienceWheel(Math.sign(delta));
     touchStartY = null;
   }, { passive: true });
-  experienceWheel.addEventListener("click", event => {
-    const card = event.target.closest("[data-experience-index]");
-    if (card) moveExperienceTo(Number(card.dataset.experienceIndex));
-  });
   document.getElementById("ojtExperiencePrevious").addEventListener("click", () => rotateExperienceWheel(-1));
   document.getElementById("ojtExperienceNext").addEventListener("click", () => rotateExperienceWheel(1));
 
