@@ -1,9 +1,20 @@
 (() => {
-  const data = window.ojtData || {};
-  const weeks = [...(Array.isArray(data.weeks) ? data.weeks : [])].sort((a, b) => {
+  let data = window.ojtData || {};
+  let weeks = [];
+  let activeFilter = "all";
+  const cachedReportKey = "portfolio-ojt-report-v1";
+  const refreshButton = document.getElementById("ojtRefresh");
+  const syncStatus = document.getElementById("ojtSyncStatus");
+  const lastUpdated = document.getElementById("ojtLastUpdated");
+  let refreshInFlight = false;
+
+  function sortWeeks() {
+    weeks = [...(Array.isArray(data.weeks) ? data.weeks : [])].sort((a, b) => {
     const weekOrder = (Number(a.week) || 0) - (Number(b.week) || 0);
     return weekOrder || String(a.startDate || "").localeCompare(String(b.startDate || ""));
-  });
+    });
+  }
+  sortWeeks();
   const filters = document.getElementById("ojtFilters");
   const weekList = document.getElementById("ojtWeeks");
   const gallery = document.getElementById("ojtGallery");
@@ -241,6 +252,54 @@
     document.getElementById("ojtFinalReflection").innerHTML = fields.map(([label, value]) => `<article><span class="card-kicker">${label}</span><p>${textOrPlaceholder(value)}</p></article>`).join("");
   }
 
+  function applyReport(nextData, fetchedAt, cached = false) {
+    if (!nextData || !Array.isArray(nextData.weeks)) throw new Error("Invalid report data");
+    data = nextData;
+    window.ojtData = nextData;
+    sortWeeks();
+    photoGroups.clear();
+    renderOverview();
+    renderWeeks(activeFilter);
+    renderGallery();
+    renderSkills();
+    renderComparisons();
+    renderFinalReflection();
+    const date = fetchedAt ? new Date(fetchedAt) : null;
+    lastUpdated.textContent = date && !Number.isNaN(date.valueOf())
+      ? `${cached ? "Last successful sync" : "Last updated"}: ${date.toLocaleString()}`
+      : "";
+    syncStatus.textContent = cached ? "Showing the last saved report; live refresh failed." : "Report refreshed successfully.";
+  }
+
+  async function refreshReport() {
+    if (refreshInFlight) return;
+    refreshInFlight = true;
+    refreshButton.disabled = true;
+    refreshButton.textContent = "Refreshing…";
+    syncStatus.textContent = "Loading the latest report…";
+    try {
+      const response = await fetch("/api/ojt", { method: "GET", headers: { Accept: "application/json" } });
+      if (!response.ok) throw new Error("Report service unavailable");
+      const result = await response.json();
+      if (!result.ok || !result.data) throw new Error("Report service unavailable");
+      applyReport(result.data, result.sourceUpdatedAt || result.fetchedAt);
+      try { localStorage.setItem(cachedReportKey, JSON.stringify({ data: result.data, fetchedAt: result.sourceUpdatedAt || result.fetchedAt })); } catch {}
+    } catch {
+      try {
+        const cached = JSON.parse(localStorage.getItem(cachedReportKey) || "null");
+        if (cached?.data) applyReport(cached.data, cached.fetchedAt, true);
+        else syncStatus.textContent = "The report could not be loaded. Check the server setup and try again.";
+      } catch {
+        syncStatus.textContent = "The report could not be loaded. Check the server setup and try again.";
+      }
+      refreshButton.textContent = "Retry";
+    } finally {
+      refreshButton.disabled = false;
+      if (refreshButton.textContent !== "Retry") refreshButton.textContent = "Refresh report";
+      refreshInFlight = false;
+    }
+  }
+
   function showPhoto(index) {
     if (!activePhotoGroup.length) return;
     activePhotoIndex = (index + activePhotoGroup.length) % activePhotoGroup.length;
@@ -271,6 +330,7 @@
   filters.addEventListener("click", event => {
     const button = event.target.closest("[data-category]");
     if (!button) return;
+    activeFilter = button.dataset.category;
     filters.querySelectorAll("[data-category]").forEach(filter => {
       const active = filter === button;
       filter.classList.toggle("active", active);
@@ -288,6 +348,10 @@
   document.getElementById("ojtLightboxPrevious").addEventListener("click", () => showPhoto(activePhotoIndex - 1));
   document.getElementById("ojtLightboxNext").addEventListener("click", () => showPhoto(activePhotoIndex + 1));
   lightbox.addEventListener("click", event => { if (event.target === lightbox) lightbox.close(); });
+  refreshButton.addEventListener("click", refreshReport);
+  window.addEventListener("portfolio:navigate", event => {
+    if (event.detail?.pageId === "ojt") refreshReport();
+  });
 
   renderOverview();
   renderWeeks();

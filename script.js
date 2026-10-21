@@ -31,6 +31,7 @@ function showPage(pageId) {
   setNavigationOpen(false);
   window.scrollTo({ top: 0, behavior: "smooth" });
   history.replaceState(null, "", `#${pageId}`);
+  window.dispatchEvent(new CustomEvent("portfolio:navigate", { detail: { pageId } }));
 }
 
 tabs.forEach(tab => tab.addEventListener("click", () => showPage(tab.dataset.page)));
