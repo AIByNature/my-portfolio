@@ -117,6 +117,111 @@ function renderSkillsGrowthMap() {
 
 renderSkillsGrowthMap();
 
+const skillsViewport = document.getElementById("skillsCarouselViewport");
+const skillsTrack = document.getElementById("skillsGrowthMap");
+const skillsPrevious = document.getElementById("skillsPrevious");
+const skillsNext = document.getElementById("skillsNext");
+const skillsCounter = document.getElementById("skillsCounter");
+const skillsPagination = document.getElementById("skillsPagination");
+let activeSkillIndex = 0;
+let skillScrollFrame = 0;
+
+function getSkillsCarouselBounds() {
+  const cards = [...skillsTrack.children];
+  const gap = Number.parseFloat(getComputedStyle(skillsTrack).columnGap) || 0;
+  const cardWidth = cards[0]?.getBoundingClientRect().width || 0;
+  const visibleCount = skillsViewport.clientWidth && cardWidth
+    ? Math.max(1, Math.floor((skillsViewport.clientWidth + gap) / (cardWidth + gap)))
+    : 1;
+  return { cards, maxStart: Math.max(0, cards.length - visibleCount) };
+}
+
+function buildSkillsPagination(maxStart) {
+  const positions = maxStart + 1;
+  if (skillsPagination.children.length === positions) return;
+  skillsPagination.replaceChildren(...Array.from({ length: positions }, (_, index) => {
+    const dot = document.createElement("button");
+    dot.type = "button";
+    dot.className = "skills-carousel-dot";
+    dot.setAttribute("aria-label", `Show skills starting with ${skillsGrowthData[index].name}`);
+    dot.addEventListener("click", () => goToSkill(index));
+    return dot;
+  }));
+}
+
+function updateSkillsCarousel() {
+  if (!skillsViewport || !skillsTrack || !skillsTrack.children.length) return;
+  const { cards, maxStart } = getSkillsCarouselBounds();
+  buildSkillsPagination(maxStart);
+  const viewportLeft = skillsViewport.getBoundingClientRect().left;
+  activeSkillIndex = cards.reduce((closestIndex, card, index) => {
+    const closestDistance = Math.abs(cards[closestIndex].getBoundingClientRect().left - viewportLeft);
+    const distance = Math.abs(card.getBoundingClientRect().left - viewportLeft);
+    return distance < closestDistance ? index : closestIndex;
+  }, 0);
+  activeSkillIndex = Math.min(activeSkillIndex, maxStart);
+
+  skillsCounter.textContent = `${String(activeSkillIndex + 1).padStart(2, "0")} / ${String(maxStart + 1).padStart(2, "0")}`;
+  skillsPrevious.disabled = activeSkillIndex === 0;
+  skillsNext.disabled = activeSkillIndex === maxStart;
+  [...skillsPagination.children].forEach((dot, index) => {
+    dot.classList.toggle("is-active", index === activeSkillIndex);
+    dot.setAttribute("aria-current", String(index === activeSkillIndex));
+  });
+}
+
+function goToSkill(index) {
+  const { cards, maxStart } = getSkillsCarouselBounds();
+  index = Math.max(0, Math.min(index, maxStart));
+  const card = skillsTrack?.children[index];
+  if (!card || !skillsViewport) return;
+  const left = skillsViewport.scrollLeft + card.getBoundingClientRect().left - skillsViewport.getBoundingClientRect().left;
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  skillsViewport.scrollTo({ left, behavior: reduceMotion ? "auto" : "smooth" });
+}
+
+buildSkillsPagination(getSkillsCarouselBounds().maxStart);
+
+skillsPrevious.addEventListener("click", () => goToSkill(activeSkillIndex - 1));
+skillsNext.addEventListener("click", () => goToSkill(activeSkillIndex + 1));
+skillsViewport.addEventListener("scroll", () => {
+  cancelAnimationFrame(skillScrollFrame);
+  skillScrollFrame = requestAnimationFrame(updateSkillsCarousel);
+}, { passive: true });
+skillsViewport.addEventListener("keydown", event => {
+  if (event.target !== skillsViewport) return;
+  const { maxStart } = getSkillsCarouselBounds();
+  if (event.key === "ArrowLeft" && activeSkillIndex > 0) {
+    event.preventDefault();
+    goToSkill(activeSkillIndex - 1);
+  } else if (event.key === "ArrowRight" && activeSkillIndex < maxStart) {
+    event.preventDefault();
+    goToSkill(activeSkillIndex + 1);
+  }
+});
+
+let skillDragStartX = null;
+let skillDragScrollLeft = 0;
+skillsViewport.addEventListener("pointerdown", event => {
+  if (event.pointerType !== "mouse" || event.button !== 0 || event.target.closest("button")) return;
+  skillDragStartX = event.clientX;
+  skillDragScrollLeft = skillsViewport.scrollLeft;
+  skillsViewport.classList.add("is-dragging");
+  skillsViewport.setPointerCapture(event.pointerId);
+});
+skillsViewport.addEventListener("pointermove", event => {
+  if (skillDragStartX === null) return;
+  skillsViewport.scrollLeft = skillDragScrollLeft - (event.clientX - skillDragStartX);
+});
+function endSkillDrag() {
+  skillDragStartX = null;
+  skillsViewport.classList.remove("is-dragging");
+}
+skillsViewport.addEventListener("pointerup", endSkillDrag);
+skillsViewport.addEventListener("pointercancel", endSkillDrag);
+window.addEventListener("resize", updateSkillsCarousel);
+updateSkillsCarousel();
+
 function setNavigationOpen(open, returnFocus = true) {
   const wasOpen = nav.classList.contains("open");
   nav.classList.toggle("open", open);
@@ -136,6 +241,7 @@ function showPage(pageId) {
   const target = document.getElementById(pageId);
   if (!target) return;
   pages.forEach(page => page.classList.toggle("active", page.id === pageId));
+  if (pageId === "skills") requestAnimationFrame(updateSkillsCarousel);
   const navPageId = pageId === "ojt-gallery" ? "ojt" : pageId;
   tabs.forEach(tab => {
     const active = tab.dataset.page === navPageId;

@@ -99,7 +99,14 @@
 
       <section class="page" id="skills" aria-labelledby="skills-title">
         <div class="section-heading"><p class="eyebrow">02 — WHAT I BRING</p><h2 id="skills-title">Skills & <span>growth.</span></h2><p class="section-intro">A snapshot of what I can do today and the practical areas I’m continuing to develop. Select a skill to see the kinds of work it includes.</p></div>
-        <div class="skills-growth-map" id="skillsGrowthMap" aria-label="Interactive skills growth map"></div>
+        <div class="skills-carousel" aria-label="Skills carousel">
+          <button class="skills-carousel-arrow" id="skillsPrevious" type="button" aria-label="Previous skill" disabled>&#8592;</button>
+          <div class="skills-carousel-viewport" id="skillsCarouselViewport" role="region" aria-roledescription="carousel" aria-label="Skills growth map" tabindex="0">
+            <div class="skills-growth-map" id="skillsGrowthMap"></div>
+          </div>
+          <button class="skills-carousel-arrow" id="skillsNext" type="button" aria-label="Next skill">&#8594;</button>
+        </div>
+        <div class="skills-carousel-meta"><div class="skills-carousel-dots" id="skillsPagination" role="group" aria-label="Choose a skill"></div><span id="skillsCounter" aria-live="polite">01 / 05</span></div>
         <p class="skills-map-note">Statuses reflect my current experience and are updated as I grow.</p>
       </section>
 
