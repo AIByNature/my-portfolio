@@ -567,3 +567,34 @@
 @media (prefers-reduced-motion: reduce) {
   .ojt-polaroid,.ojt-lightbox,.ojt-lightbox::backdrop,.ojt-lightbox-close,.ojt-lightbox-arrow,.ojt-gallery-back { transition: none; }
 }
+
+/* Keep the activity summaries compact within the OJT page. */
+.ojt-activity-grid {
+  max-height: min(58vh, 460px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  align-content: start;
+  padding: 3px 8px 3px 3px;
+  overscroll-behavior-y: contain;
+  scroll-padding-block: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--olive2) transparent;
+}
+
+.ojt-activity-grid:focus-visible {
+  outline: 1px solid var(--olive2);
+  outline-offset: 2px;
+}
+
+.ojt-activity-grid::-webkit-scrollbar { width: 8px; }
+.ojt-activity-grid::-webkit-scrollbar-track { background: transparent; }
+.ojt-activity-grid::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: var(--olive2);
+  background-clip: padding-box;
+}
+
+@media (max-width: 650px) {
+  .ojt-activity-grid { max-height: min(62vh, 520px); }
+}
