@@ -142,13 +142,18 @@
   const docsNext = document.getElementById("ojtDocsNext");
   const photoResources = (Array.isArray(data.photos) ? data.photos : []).filter(photo => {
     const src = String(photo?.src || "");
-    return /^assets\/ojt\/[\w./ -]+\.(?:jpe?g|png|webp|avif)$/i.test(src) && !src.split("/").includes("..");
+    return /^assets\/ojt\/[\w./ ~()-]+\.(?:jpe?g|png|webp|avif)$/i.test(src) && !src.split("/").includes("..");
   }).map(photo => ({
     src: String(photo.src),
     title: String(photo.title || photo.alt || "OJT photo"),
     alt: String(photo.alt || photo.title || "OJT photo documentation"),
-    caption: String(photo.caption || "")
+    category: String(photo.category || "OJT photo documentation"),
+    date: String(photo.date || photo.week || ""),
+    description: String(photo.description || photo.caption || ""),
+    skills: Array.isArray(photo.skills) ? photo.skills.map(String) : [],
+    reflection: String(photo.reflection || photo.learningOutcome || "")
   }));
+  document.getElementById("ojtPhotoLogCount").textContent = `${photoResources.length} PHOTOS · UNDATED LOG`;
   let currentResource = 0;
   let lightboxIndex = 0;
   const lightbox = document.getElementById("ojtLightbox");
@@ -168,11 +173,12 @@
       <article class="ojt-docs-slide" aria-label="Photo ${index + 1} of ${photoResources.length}" aria-hidden="${index !== currentResource}" ${index !== currentResource ? "inert" : ""}>
         <div class="ojt-docs-card">
           <button class="ojt-docs-media has-image" type="button" data-photo-index="${index}" aria-label="Enlarge: ${escapeHTML(photo.alt)}"><img src="${escapeHTML(photo.src)}" alt="${escapeHTML(photo.alt)}" loading="${index === 0 ? "eager" : "lazy"}"><span class="ojt-photo-placeholder-block" hidden>PHOTO UNAVAILABLE</span><span class="ojt-docs-media-label">OJT / PHOTO</span></button>
-          <div class="ojt-docs-copy"><span class="ojt-docs-category">PHOTO ${String(index + 1).padStart(2, "0")}</span><h4>${escapeHTML(photo.title)}</h4>${photo.caption ? `<p>${escapeHTML(photo.caption)}</p>` : ""}<button class="ojt-docs-action" type="button" data-photo-index="${index}">Enlarge Photo <span aria-hidden="true">&#8599;</span></button></div>
+          <div class="ojt-docs-copy"><span class="ojt-docs-category">${escapeHTML(photo.category)}</span><h4>${escapeHTML(photo.title)}</h4>${photo.date ? `<p class="ojt-photo-date">${escapeHTML(photo.date)}</p>` : ""}${photo.description ? `<p>${escapeHTML(photo.description)}</p>` : ""}${photo.skills.length ? `<div class="ojt-photo-skills" aria-label="Skills applied">${photo.skills.map(skill => `<span>${escapeHTML(skill)}</span>`).join("")}</div>` : ""}${photo.reflection ? `<p class="ojt-photo-reflection">${escapeHTML(photo.reflection)}</p>` : ""}<button class="ojt-docs-action" type="button" data-photo-index="${index}">Enlarge Photo <span aria-hidden="true">&#8599;</span></button></div>
         </div>
-      </article>`).join("") : `<div class="ojt-empty"><span>NO PHOTOS / 00</span><p>Download the actual OJT photos from your Drive folder into <code>assets/ojt/</code>, then add their local paths and verified alt text to the <code>photos</code> array in <code>ojt-data.js</code>.</p></div>`;
+      </article>`).join("") : `<div class="ojt-empty"><span>NO PHOTOS / 00</span><p>Add local image paths from <code>assets/OJT/</code> and verified alt text to the <code>photos</code> array in <code>ojt-data.js</code>.</p></div>`;
 
     docsDots.innerHTML = photoResources.map((photo, index) => `<button type="button" class="ojt-docs-dot${index === currentResource ? " is-active" : ""}" data-resource-index="${index}" aria-label="Show photo ${index + 1}: ${escapeHTML(photo.title)}" aria-current="${index === currentResource ? "true" : "false"}"></button>`).join("");
+    docsDots.hidden = photoResources.length > 12;
     docsTrack.querySelectorAll("img").forEach(image => image.addEventListener("error", () => {
       image.hidden = true;
       image.closest(".ojt-docs-media")?.classList.remove("has-image");
@@ -214,7 +220,7 @@
     lightboxImage.src = photo.src;
     lightboxImage.onerror = () => { lightboxImage.hidden = true; lightboxPlaceholder.hidden = false; };
     document.getElementById("ojtLightboxLabel").textContent = photo.title;
-    lightboxCaption.textContent = photo.caption;
+    lightboxCaption.textContent = photo.description;
     lightboxCount.textContent = `${String(lightboxIndex + 1).padStart(2, "0")} / ${String(photoResources.length).padStart(2, "0")}`;
     lightboxPrevious.hidden = lightboxNext.hidden = photoResources.length < 2;
     if (!lightbox.open) lightbox.showModal();
