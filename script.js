@@ -21,48 +21,117 @@ function showPage(pageId) {
 tabs.forEach(tab => tab.addEventListener("click", () => showPage(tab.dataset.page)));
 document.querySelectorAll("[data-go]").forEach(button => button.addEventListener("click", () => showPage(button.dataset.go)));
 
-// Add, remove, or replace profile image paths here. Missing files leave the card placeholder visible.
+// Add, remove, or replace profile image paths and alt text here.
 const profileImages = [
-  "assets/profile-1.jpg",
-  "assets/profile-2.jpg",
-  "assets/profile-3.jpg",
-  "assets/profile-4.jpg",
-  "assets/profile-5.jpg",
-  "assets/profile-6.jpg"
+  { src: "assets/profile-1.jpg", alt: "Profile photo 1" },
+  { src: "assets/profile-2.jpg", alt: "Profile photo 2" },
+  { src: "assets/profile-3.jpg", alt: "Profile photo 3" },
+  { src: "assets/profile-4.jpg", alt: "Profile photo 4" },
+  { src: "assets/profile-5.jpg", alt: "Profile photo 5" },
+  { src: "assets/profile-6.jpg", alt: "Profile photo 6" }
 ];
-const profileImage = document.getElementById("profileImage");
 const profileCarousel = document.getElementById("profileCarousel");
 const profileCounter = document.getElementById("profileCounter");
+const profileTrack = document.getElementById("profileTrack");
+const profilePagination = document.getElementById("profilePagination");
 let currentProfileImage = 0;
+let dragStartX = null;
+let dragged = false;
 
-function showProfileImage(index) {
+function createProfileSlide(photo, index) {
+  const slide = document.createElement("div");
+  slide.className = "carousel-slide is-placeholder";
+  slide.setAttribute("aria-hidden", "true");
+
+  const placeholder = document.createElement("span");
+  placeholder.className = "portrait-initials";
+  placeholder.innerHTML = "YOUR<br>PHOTO";
+  slide.append(placeholder);
+
+  if (photo?.src) {
+    const image = document.createElement("img");
+    image.className = "profile-image";
+    image.src = photo.src;
+    image.alt = photo.alt || `Profile photo ${index + 1}`;
+    image.draggable = false;
+    image.addEventListener("load", () => slide.classList.remove("is-placeholder"));
+    image.addEventListener("error", () => slide.classList.add("is-placeholder"));
+    slide.prepend(image);
+  }
+  return slide;
+}
+
+function renderProfileCarousel(index, direction = 1) {
   const count = profileImages.length;
   if (!count) {
     profileCounter.textContent = "00 / 00";
-    profileImage.hidden = true;
-    profileCarousel.classList.remove("has-image");
+    if (!profileTrack.children.length) profileTrack.append(createProfileSlide(null, 0));
+    profilePagination.replaceChildren();
     return;
   }
 
   currentProfileImage = (index + count) % count;
   profileCounter.textContent = `${String(currentProfileImage + 1).padStart(2, "0")} / ${String(count).padStart(2, "0")}`;
-  profileImage.alt = `Profile photo ${currentProfileImage + 1} of ${count}`;
-  profileImage.classList.remove("is-visible");
-  profileImage.hidden = false;
-  profileImage.onload = () => {
-    profileImage.classList.add("is-visible");
-    profileCarousel.classList.add("has-image");
-  };
-  profileImage.onerror = () => {
-    profileImage.hidden = true;
-    profileCarousel.classList.remove("has-image");
-  };
-  profileImage.src = profileImages[currentProfileImage];
+  if (profileTrack.children.length !== count) {
+    profileTrack.replaceChildren(...profileImages.map(createProfileSlide));
+  }
+  [...profileTrack.children].forEach((slide, slideIndex) => {
+    const previous = (currentProfileImage - 1 + count) % count;
+    const next = (currentProfileImage + 1) % count;
+    const position = slideIndex === currentProfileImage ? "active" : slideIndex === previous ? "previous" : slideIndex === next ? "next" : "hidden";
+    slide.classList.remove("is-active", "is-previous", "is-next", "is-hidden");
+    slide.classList.add(`is-${position}`);
+    slide.dataset.direction = String(direction);
+    slide.setAttribute("aria-hidden", String(position !== "active"));
+  });
+  [...profilePagination.children].forEach((dot, dotIndex) => {
+    dot.setAttribute("aria-current", String(dotIndex === currentProfileImage));
+    dot.classList.toggle("is-active", dotIndex === currentProfileImage);
+  });
 }
 
-document.getElementById("profilePrevious").addEventListener("click", () => showProfileImage(currentProfileImage - 1));
-document.getElementById("profileNext").addEventListener("click", () => showProfileImage(currentProfileImage + 1));
-showProfileImage(0);
+function moveProfileCarousel(step) {
+  renderProfileCarousel(currentProfileImage + step, Math.sign(step));
+}
+
+function buildProfilePagination() {
+  profilePagination.replaceChildren(...profileImages.map((photo, index) => {
+    const dot = document.createElement("button");
+    dot.type = "button";
+    dot.className = "carousel-dot";
+    dot.setAttribute("aria-label", `Show profile photo ${index + 1}`);
+    dot.addEventListener("click", () => renderProfileCarousel(index, Math.sign(index - currentProfileImage) || 1));
+    return dot;
+  }));
+}
+
+document.getElementById("profilePrevious").addEventListener("click", () => moveProfileCarousel(-1));
+document.getElementById("profileNext").addEventListener("click", () => moveProfileCarousel(1));
+profileCarousel.addEventListener("keydown", event => {
+  if (event.key === "ArrowLeft") { event.preventDefault(); moveProfileCarousel(-1); }
+  if (event.key === "ArrowRight") { event.preventDefault(); moveProfileCarousel(1); }
+});
+profileCarousel.addEventListener("pointerdown", event => {
+  if (event.target.closest("button")) return;
+  dragStartX = event.clientX;
+  dragged = false;
+  profileCarousel.setPointerCapture(event.pointerId);
+});
+profileCarousel.addEventListener("pointerup", event => {
+  if (dragStartX === null) return;
+  const distance = event.clientX - dragStartX;
+  if (Math.abs(distance) > 40) {
+    dragged = true;
+    moveProfileCarousel(distance < 0 ? 1 : -1);
+  }
+  dragStartX = null;
+});
+profileCarousel.addEventListener("pointercancel", () => { dragStartX = null; });
+profileCarousel.addEventListener("click", event => {
+  if (dragged) { event.preventDefault(); event.stopPropagation(); dragged = false; }
+}, true);
+buildProfilePagination();
+renderProfileCarousel(0);
 
 menuToggle.addEventListener("click", () => {
   const open = nav.classList.toggle("open");
