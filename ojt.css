@@ -570,15 +570,27 @@
 
 /* Keep the activity summaries compact within the OJT page. */
 .ojt-activity-grid {
-  max-height: min(58vh, 460px);
+  height: clamp(190px, 34vh, 260px);
   overflow-x: hidden;
   overflow-y: auto;
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-rows: 100%;
   align-content: start;
   padding: 3px 8px 3px 3px;
   overscroll-behavior-y: contain;
   scroll-padding-block: 8px;
+  scroll-snap-type: y mandatory;
   scrollbar-width: thin;
   scrollbar-color: var(--olive2) transparent;
+}
+
+.ojt-activity-grid > .ojt-local-activity {
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 }
 
 .ojt-activity-grid:focus-visible {
@@ -596,5 +608,5 @@
 }
 
 @media (max-width: 650px) {
-  .ojt-activity-grid { max-height: min(62vh, 520px); }
+  .ojt-activity-grid { height: clamp(190px, 38vh, 300px); }
 }
