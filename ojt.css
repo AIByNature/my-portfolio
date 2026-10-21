@@ -582,7 +582,7 @@
   overflow-y: hidden;
   align-content: stretch;
   padding: 3px 8px 3px 3px;
-  overscroll-behavior-x: contain;
+  overscroll-behavior: contain;
   scroll-padding-inline: 3px;
   scroll-snap-type: x mandatory;
   scrollbar-width: thin;
@@ -594,7 +594,7 @@
   box-sizing: border-box;
   height: 100%;
   min-height: 0;
-  overflow-y: auto;
+  overflow: hidden;
   scroll-snap-align: start;
   scroll-snap-stop: always;
 }

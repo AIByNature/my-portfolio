@@ -181,11 +181,12 @@
     activities.addEventListener("wheel", event => {
       if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
       event.preventDefault();
+      event.stopPropagation();
       if (wheelLocked) return;
       wheelLocked = true;
       activities.scrollBy({ left: Math.sign(event.deltaY) * cardStep, behavior: reducedMotion.matches ? "auto" : "smooth" });
       scheduleActivitySettle();
-    }, { passive: false });
+    }, { passive: false, capture: true });
     activities.addEventListener("scroll", scheduleActivitySettle, { passive: true });
     activities.addEventListener("scrollend", settleActivityScroll);
     activities.addEventListener("keydown", event => {
