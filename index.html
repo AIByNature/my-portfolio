@@ -7,6 +7,9 @@
   <title>My Portfolio</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="responsive.css">
+  <link rel="stylesheet" href="ojt.css">
+  <script src="ojt-data.js" defer></script>
+  <script src="ojt.js" defer></script>
   <script src="script.js" defer></script>
 </head>
 <body>
@@ -14,11 +17,12 @@
     <header class="topbar">
       <a class="brand" href="#home" aria-label="Go to home"><span class="brand-mark">T</span><span>TAN<span class="brand-dot">.</span></span></a>
       <nav class="nav-tabs" id="navTabs" aria-label="Main navigation" aria-hidden="true" inert>
-        <div class="nav-drawer-heading"><span>INDEX</span><span>01 — 06</span></div>
+        <div class="nav-drawer-heading"><span>INDEX</span><span>01 — 07</span></div>
         <button class="nav-tab active" data-page="home">Home</button>
         <button class="nav-tab" data-page="about">About</button>
         <button class="nav-tab" data-page="skills">Skills</button>
         <button class="nav-tab" data-page="experience">Experience</button>
+        <button class="nav-tab" data-page="ojt">OJT Journey</button>
         <button class="nav-tab" data-page="projects">Projects</button>
         <button class="nav-tab" data-page="contact">Contact</button>
       </nav>
@@ -95,8 +99,61 @@
         <p class="disclaimer">Update dates, role names, and descriptions to match your official records before publishing.</p>
       </section>
 
+      <section class="page ojt-page" id="ojt" aria-labelledby="ojt-title">
+        <div class="section-heading ojt-heading">
+          <p class="eyebrow">04 — FIELD NOTES / PROFESSIONAL DEVELOPMENT</p>
+          <h2 id="ojt-title">My OJT <span>Journey.</span></h2>
+          <p class="section-intro">Documenting my growth through hands-on IT experience.</p>
+        </div>
+        <div class="ojt-intro">
+          <span class="card-kicker">PAMANTASAN NG LUNGSOD NG VALENZUELA (PLV)</span>
+          <p>This logbook records my weekly responsibilities, completed tasks, lessons learned, and professional development during On-the-Job Training.</p>
+        </div>
+
+        <section class="ojt-dashboard" aria-label="OJT overview">
+          <article class="ojt-metric"><span>DOCUMENTED WEEKS</span><strong id="ojtWeeksTotal">0</strong></article>
+          <article class="ojt-metric"><span>COMPLETED OJT HOURS</span><strong id="ojtHoursCompleted">Not yet specified</strong></article>
+          <article class="ojt-metric"><span>REQUIRED OJT HOURS</span><strong id="ojtHoursRequired">Not yet specified</strong></article>
+          <article class="ojt-metric ojt-progress-metric"><span>OVERALL PROGRESS</span><strong id="ojtProgressText">Not yet specified</strong><div class="ojt-progress-track"><span id="ojtProgressBar"></span></div><small id="ojtProgressNote"></small></article>
+          <article class="ojt-metric"><span>DOCUMENTED ACTIVITIES</span><strong id="ojtActivitiesTotal">0</strong></article>
+        </section>
+
+        <section class="ojt-block" aria-labelledby="ojt-timeline-title">
+          <div class="ojt-block-heading"><div><p class="eyebrow">WEEK BY WEEK</p><h3 id="ojt-timeline-title">Progress timeline</h3></div><span class="ojt-count" id="ojtTimelineCount">0 ENTRIES</span></div>
+          <div class="ojt-filters" id="ojtFilters" role="group" aria-label="Filter weekly activities">
+            <button type="button" class="ojt-filter active" data-category="all" aria-pressed="true">All Activities</button>
+            <button type="button" class="ojt-filter" data-category="hardware" aria-pressed="false">Hardware</button>
+            <button type="button" class="ojt-filter" data-category="software" aria-pressed="false">Software</button>
+            <button type="button" class="ojt-filter" data-category="networking" aria-pressed="false">Networking</button>
+            <button type="button" class="ojt-filter" data-category="inventory" aria-pressed="false">Inventory</button>
+            <button type="button" class="ojt-filter" data-category="documentation" aria-pressed="false">Documentation</button>
+          </div>
+          <div class="ojt-week-list" id="ojtWeeks"></div>
+        </section>
+
+        <section class="ojt-block" aria-labelledby="ojt-gallery-title">
+          <div class="ojt-block-heading"><div><p class="eyebrow">ACTIVITY RECORD</p><h3 id="ojt-gallery-title">Documentation gallery</h3></div></div>
+          <div class="ojt-gallery" id="ojtGallery"></div>
+        </section>
+
+        <section class="ojt-block" aria-labelledby="ojt-skills-title">
+          <div class="ojt-block-heading"><div><p class="eyebrow">PRACTICE & GROWTH</p><h3 id="ojt-skills-title">Skills and learning outcomes</h3></div></div>
+          <div class="ojt-skills" id="ojtSkills"></div>
+        </section>
+
+        <section class="ojt-block ojt-before-after" id="ojtBeforeAfterSection" aria-labelledby="ojt-before-after-title" hidden>
+          <div class="ojt-block-heading"><div><p class="eyebrow">PROCESS NOTES</p><h3 id="ojt-before-after-title">Before & after</h3></div></div>
+          <div class="ojt-comparisons" id="ojtComparisons"></div>
+        </section>
+
+        <section class="ojt-block ojt-final-reflection" id="ojtFinalSection" aria-labelledby="ojt-final-title" hidden>
+          <div class="ojt-block-heading"><div><p class="eyebrow">CLOSING NOTES</p><h3 id="ojt-final-title">Final reflection</h3></div></div>
+          <div class="ojt-final-grid" id="ojtFinalReflection"></div>
+        </section>
+      </section>
+
       <section class="page" id="projects" aria-labelledby="projects-title">
-        <div class="section-heading"><p class="eyebrow">04 — SELECTED WORK</p><h2 id="projects-title">Projects & <span>outputs.</span></h2><p class="section-intro">A selection of academic work, design outputs, and collaborative projects. Replace each placeholder with your real work.</p></div>
+        <div class="section-heading"><p class="eyebrow">05 — SELECTED WORK</p><h2 id="projects-title">Projects & <span>outputs.</span></h2><p class="section-intro">A selection of academic work, design outputs, and collaborative projects. Replace each placeholder with your real work.</p></div>
         <div class="projects-grid">
           <article class="project-card"><div class="project-visual visual-olive"><span>01</span><div class="visual-shape shape-one"></div><div class="visual-word">CYBER<br>DEFENDER</div></div><div class="project-info"><div class="project-type">CAPSTONE / GAME DESIGN</div><h3>CyberDefender</h3><p>A visual novel-style cybersecurity awareness game featuring story-driven choices and digital safety scenarios.</p><div class="tags"><span>Visual novel</span><span>Documentation</span><span>Cyber awareness</span></div></div></article>
           <article class="project-card"><div class="project-visual visual-sand"><span>02</span><div class="layout-demo"><i></i><i></i><i></i><b></b></div><div class="visual-word">LAYOUT<br>STUDIES</div></div><div class="project-info"><div class="project-type">MULTIMEDIA / GRAPHIC DESIGN</div><h3>Visual Design Collection</h3><p>A collection of posters, layouts, digital assets, and presentation visuals created for school or personal work.</p><div class="tags"><span>Canva</span><span>Photoshop</span><span>Digital design</span></div><a class="text-link" href="mailto:your.email@example.com?subject=Visual%20Design%20Portfolio">Ask to view samples ↗</a></div></article>
@@ -106,10 +163,16 @@
       </section>
 
       <section class="page" id="contact" aria-labelledby="contact-title">
-        <div class="contact-layout"><div><p class="eyebrow">05 — LET'S CONNECT</p><h2 id="contact-title">Have a project<br>in <span>mind?</span></h2><p class="section-intro">I'm open to learning opportunities, collaboration, and entry-level experiences where I can contribute and grow.</p><div class="contact-note"><span class="status-dot"></span> Available for suitable opportunities</div></div><div class="contact-card"><span class="card-kicker">CONTACT DETAILS</span><div class="contact-row"><span>EMAIL</span><a href="mailto:your.email@example.com">your.email@example.com ↗</a></div><div class="contact-row"><span>GITHUB</span><a href="https://github.com/AIByNature" target="_blank" rel="noreferrer">github.com/AIByNature ↗</a></div><div class="contact-row"><span>LINKEDIN</span><a href="https://www.linkedin.com/" target="_blank" rel="noreferrer">Add your LinkedIn ↗</a></div><p class="contact-hint">Replace the example email and profile links with your own details before publishing.</p><button class="button button-primary" id="copyEmail" data-email="your.email@example.com">Copy email address</button><p class="copy-feedback" id="copyFeedback" aria-live="polite"></p></div></div>
+        <div class="contact-layout"><div><p class="eyebrow">06 — LET'S CONNECT</p><h2 id="contact-title">Have a project<br>in <span>mind?</span></h2><p class="section-intro">I'm open to learning opportunities, collaboration, and entry-level experiences where I can contribute and grow.</p><div class="contact-note"><span class="status-dot"></span> Available for suitable opportunities</div></div><div class="contact-card"><span class="card-kicker">CONTACT DETAILS</span><div class="contact-row"><span>EMAIL</span><a href="mailto:your.email@example.com">your.email@example.com ↗</a></div><div class="contact-row"><span>GITHUB</span><a href="https://github.com/AIByNature" target="_blank" rel="noreferrer">github.com/AIByNature ↗</a></div><div class="contact-row"><span>LINKEDIN</span><a href="https://www.linkedin.com/" target="_blank" rel="noreferrer">Add your LinkedIn ↗</a></div><p class="contact-hint">Replace the example email and profile links with your own details before publishing.</p><button class="button button-primary" id="copyEmail" data-email="your.email@example.com">Copy email address</button><p class="copy-feedback" id="copyFeedback" aria-live="polite"></p></div></div>
       </section>
     </main>
     <footer class="footer"><span>© <span id="year"></span> [Your Name]</span><span>MADE WITH CURIOSITY & CARE</span><button class="back-top" data-go="home">BACK TO HOME ↑</button></footer>
   </div>
+  <dialog class="ojt-lightbox" id="ojtLightbox" aria-label="Activity photo viewer">
+    <div class="ojt-lightbox-header"><span id="ojtLightboxLabel">ACTIVITY PHOTO</span><button type="button" id="ojtLightboxClose" aria-label="Close photo viewer">×</button></div>
+    <div class="ojt-lightbox-view"><button type="button" id="ojtLightboxPrevious" aria-label="Previous photo">‹</button><div class="ojt-lightbox-image-wrap"><img id="ojtLightboxImage" alt=""><div class="ojt-photo-placeholder" id="ojtLightboxPlaceholder">PHOTO UNAVAILABLE</div></div><button type="button" id="ojtLightboxNext" aria-label="Next photo">›</button></div>
+    <p class="ojt-lightbox-caption" id="ojtLightboxCaption"></p>
+    <span class="ojt-lightbox-count" id="ojtLightboxCount"></span>
+  </dialog>
 </body>
 </html>
