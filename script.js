@@ -403,7 +403,7 @@ const gameClose = document.getElementById("miniGameClose");
 const gameStart = document.getElementById("miniGameStart");
 const gameSound = document.getElementById("miniGameSound");
 const gameArena = document.getElementById("miniGameArena");
-const gameTarget = document.getElementById("miniGameTarget");
+const gameHoles = [...document.querySelectorAll(".whack-hole")];
 const gameTimer = document.getElementById("miniGameTimer");
 const gameScore = document.getElementById("miniGameScore");
 const gameMessage = document.getElementById("miniGameMessage");
@@ -414,13 +414,51 @@ let gamePoints = 0;
 let gameRunning = false;
 let gameSoundEnabled = false;
 let gameAudioContext = null;
+let activeMoleIndex = -1;
+let previousMoleIndex = -1;
+let nextMoleTimeout = null;
+
+function hideAllMoles() {
+  gameHoles.forEach((hole, index) => {
+    hole.classList.remove("is-active", "is-hit");
+    hole.setAttribute("aria-label", `Hole ${index + 1}`);
+  });
+  activeMoleIndex = -1;
+}
+
+function popNextMole() {
+  if (!gameRunning) return;
+  let index = Math.floor(Math.random() * gameHoles.length);
+  if (gameHoles.length > 1 && index === previousMoleIndex) index = (index + 1 + Math.floor(Math.random() * (gameHoles.length - 1))) % gameHoles.length;
+  activeMoleIndex = index;
+  previousMoleIndex = index;
+  const hole = gameHoles[index];
+  hole.classList.add("is-active");
+  hole.classList.remove("is-hit");
+  hole.setAttribute("aria-label", `Mole in hole ${index + 1}. Whack it!`);
+  gameMessage.textContent = `Mole up in hole ${index + 1}!`;
+  nextMoleTimeout = window.setTimeout(() => {
+    nextMoleTimeout = null;
+    if (!gameRunning || activeMoleIndex !== index) return;
+    activeMoleIndex = -1;
+    hole.classList.remove("is-active");
+    hole.setAttribute("aria-label", `Hole ${index + 1}`);
+    gameMessage.textContent = "The mole ducked back down. Keep watching!";
+    nextMoleTimeout = window.setTimeout(() => {
+      nextMoleTimeout = null;
+      popNextMole();
+    }, 230);
+  }, 1050);
+}
 
 function setGamePanelOpen(open) {
   if (!open && gameRunning) {
     window.clearInterval(gameInterval);
     gameInterval = null;
+    window.clearTimeout(nextMoleTimeout);
+    nextMoleTimeout = null;
     gameRunning = false;
-    gameTarget.hidden = true;
+    hideAllMoles();
     gameArena.classList.remove("is-active");
     gameMessage.textContent = "Round stopped. Start a new game when you’re ready.";
     gameStart.textContent = "Start Game";
@@ -431,17 +469,6 @@ function setGamePanelOpen(open) {
   gameLauncher.setAttribute("aria-expanded", String(open));
   if (open) gameStart.focus({ preventScroll: true });
   else gameLauncher.focus({ preventScroll: true });
-}
-
-function placeGameTarget() {
-  gameTarget.hidden = false;
-  const padding = 7;
-  const maxX = Math.max(padding, gameArena.clientWidth - gameTarget.offsetWidth - padding);
-  const maxY = Math.max(padding, gameArena.clientHeight - gameTarget.offsetHeight - padding);
-  const minX = padding;
-  const minY = padding;
-  gameTarget.style.left = `${minX + Math.random() * (maxX - minX)}px`;
-  gameTarget.style.top = `${minY + Math.random() * (maxY - minY)}px`;
 }
 
 function playTargetSound() {
@@ -468,10 +495,12 @@ function playTargetSound() {
 function finishGame() {
   if (gameInterval !== null) window.clearInterval(gameInterval);
   gameInterval = null;
+  if (nextMoleTimeout !== null) window.clearTimeout(nextMoleTimeout);
+  nextMoleTimeout = null;
   gameRunning = false;
   gameRemaining = 0;
   gameTimer.textContent = "0";
-  gameTarget.hidden = true;
+  hideAllMoles();
   gameArena.classList.remove("is-active");
   gameMessage.textContent = `Time’s up! Your final score is ${gamePoints}.`;
   gameStart.textContent = "Play Again";
@@ -480,16 +509,19 @@ function finishGame() {
 function startGame() {
   if (gameRunning) return;
   if (gameInterval !== null) window.clearInterval(gameInterval);
+  if (nextMoleTimeout !== null) window.clearTimeout(nextMoleTimeout);
   gamePoints = 0;
   gameRemaining = 15;
+  previousMoleIndex = -1;
   gameScore.textContent = "0";
   gameTimer.textContent = "15";
   gameRunning = true;
   gameDeadline = Date.now() + 15000;
-  gameMessage.textContent = "Go! Click the target.";
+  gameMessage.textContent = "Go! Whack the mole.";
   gameArena.classList.add("is-active");
   gameStart.textContent = "Game Running";
-  placeGameTarget();
+  hideAllMoles();
+  popNextMole();
 
   gameInterval = window.setInterval(() => {
     const next = Math.max(0, Math.ceil((gameDeadline - Date.now()) / 1000));
@@ -504,13 +536,24 @@ function startGame() {
 gameLauncher.addEventListener("click", () => setGamePanelOpen(true));
 gameClose.addEventListener("click", () => setGamePanelOpen(false));
 gameStart.addEventListener("click", startGame);
-gameTarget.addEventListener("click", () => {
-  if (!gameRunning) return;
+gameHoles.forEach((hole, index) => hole.addEventListener("click", () => {
+  if (!gameRunning || activeMoleIndex !== index) return;
+  if (nextMoleTimeout !== null) window.clearTimeout(nextMoleTimeout);
+  nextMoleTimeout = null;
+  activeMoleIndex = -1;
+  hole.classList.remove("is-active");
+  hole.classList.add("is-hit");
+  hole.setAttribute("aria-label", `Mole hit in hole ${index + 1}`);
   gamePoints += 1;
   gameScore.textContent = String(gamePoints);
+  gameMessage.textContent = `Nice hit! Score ${gamePoints}.`;
   playTargetSound();
-  placeGameTarget();
-});
+  nextMoleTimeout = window.setTimeout(() => {
+    hole.classList.remove("is-hit");
+    nextMoleTimeout = null;
+    popNextMole();
+  }, 300);
+}));
 gameSound.addEventListener("click", () => {
   gameSoundEnabled = !gameSoundEnabled;
   gameSound.setAttribute("aria-pressed", String(gameSoundEnabled));
