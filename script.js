@@ -4,6 +4,119 @@ const nav = document.getElementById("navTabs");
 const menuToggle = document.getElementById("menuToggle");
 const navBackdrop = document.getElementById("navBackdrop");
 
+// Update this list as your experience grows. Use only the three honest status labels.
+const skillsGrowthData = [
+  {
+    name: "Canva and Digital Design",
+    status: "Comfortable",
+    icon: "✳",
+    abilities: ["Visual layouts and graphic design", "Presentation design", "Creative digital materials"]
+  },
+  {
+    name: "Documentation and Technical Writing",
+    status: "Comfortable",
+    icon: "▤",
+    abilities: ["Organizing information", "Preparing reports", "Technical and project documentation"]
+  },
+  {
+    name: "Hardware Setup and Computer Maintenance",
+    status: "Developing",
+    icon: "⌘",
+    abilities: ["Computer assembly and disassembly", "Hardware inspection and peripheral setup", "Computer deployment and basic maintenance during OJT"]
+  },
+  {
+    name: "Microsoft Office",
+    status: "Comfortable",
+    icon: "▧",
+    abilities: ["Document preparation", "Presentations and spreadsheets", "Administrative tasks"]
+  },
+  {
+    name: "Multimedia and Game Asset Creation",
+    status: "Developing",
+    icon: "◇",
+    abilities: ["Digital illustrations and visual assets", "UI layouts", "Creative assets for multimedia and game projects"]
+  }
+];
+
+function renderSkillsGrowthMap() {
+  const map = document.getElementById("skillsGrowthMap");
+  if (!map) return;
+
+  const statusClass = {
+    "Comfortable": "comfortable",
+    "Developing": "developing",
+    "Currently Learning": "learning"
+  };
+
+  map.replaceChildren(...skillsGrowthData.map((skill, index) => {
+    const card = document.createElement("article");
+    card.className = "growth-skill";
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "growth-skill-toggle";
+    button.setAttribute("aria-expanded", "false");
+    button.setAttribute("aria-controls", `growth-skill-details-${index}`);
+
+    const icon = document.createElement("span");
+    icon.className = "growth-skill-icon";
+    icon.setAttribute("aria-hidden", "true");
+    icon.textContent = skill.icon;
+
+    const heading = document.createElement("span");
+    heading.className = "growth-skill-name";
+    heading.textContent = skill.name;
+
+    const status = document.createElement("span");
+    status.className = `growth-skill-status ${statusClass[skill.status] || "developing"}`;
+    status.textContent = skill.status;
+
+    const cue = document.createElement("span");
+    cue.className = "growth-skill-cue";
+    cue.setAttribute("aria-hidden", "true");
+    cue.textContent = "+";
+
+    button.append(icon, heading, status, cue);
+
+    const details = document.createElement("ul");
+    details.className = "growth-skill-details";
+    details.id = `growth-skill-details-${index}`;
+    details.hidden = true;
+    skill.abilities.forEach(ability => {
+      const item = document.createElement("li");
+      item.textContent = ability;
+      details.append(item);
+    });
+
+    let pinnedOpen = false;
+    let pointerOver = false;
+    const setOpen = open => {
+      button.setAttribute("aria-expanded", String(open));
+      card.classList.toggle("is-open", open);
+      details.hidden = !open;
+    };
+    card.addEventListener("pointerenter", event => {
+      if (event.pointerType === "touch") return;
+      pointerOver = true;
+      if (!pinnedOpen) setOpen(true);
+    });
+    card.addEventListener("pointerleave", event => {
+      if (event.pointerType === "touch") return;
+      pointerOver = false;
+      if (!pinnedOpen) setOpen(false);
+    });
+    button.addEventListener("click", () => {
+      pinnedOpen = !pinnedOpen;
+      setOpen(pinnedOpen || pointerOver);
+    });
+
+    card.append(button, details);
+    return card;
+  }));
+}
+
+renderSkillsGrowthMap();
+
 function setNavigationOpen(open, returnFocus = true) {
   const wasOpen = nav.classList.contains("open");
   nav.classList.toggle("open", open);
