@@ -153,7 +153,7 @@
   const experienceWheel = document.getElementById("ojtExperienceWheel");
   const experienceWheelStage = document.getElementById("ojtExperienceWheelStage");
   const experienceWheelCounter = document.getElementById("ojtExperienceCounter");
-  const experienceWheelAngle = 34;
+  const experienceWheelAngle = 55;
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   let experienceGroup = 0;
   let experienceAnimating = false;
