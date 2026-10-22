@@ -30,6 +30,7 @@
       const titleVisual = document.createElement('div'); titleVisual.className = 'visual-word'; titleVisual.textContent = item.title || 'PROJECT'; visual.append(number, titleVisual);
       const info = document.createElement('div'); info.className = 'project-info';
       const category = document.createElement('div'); category.className = 'project-type'; category.textContent = item.category || 'PROJECT';
+      if(item.status){const status=document.createElement('span');status.className='project-status';status.textContent=item.status;info.append(status);}
       if(item.featured){const featured=document.createElement('span');featured.className='project-featured';featured.textContent='FEATURED';info.append(featured);}
       const title = document.createElement('h3'); title.textContent = item.title || '';
       const description = document.createElement('p'); description.textContent = item.description || '';
@@ -48,7 +49,7 @@
     root.replaceChildren();
     items.filter(item => item && item.published !== false).forEach(item => {
       const article = document.createElement('article'); article.className = 'ojt-block';
-      const heading = document.createElement('h3'); heading.textContent = [item.week ? `Week ${item.week}` : '', item.title || item.activity || '', item.date || ''].filter(Boolean).join(' · ');
+      const heading = document.createElement('h3'); heading.textContent = [item.week ? `Week ${item.week}` : '', item.title || item.activity || '', item.date || '', item.location || ''].filter(Boolean).join(' · ');
       const description = document.createElement('p'); description.textContent = item.description || '';
       article.append(heading, description);
       ['tasks', 'skills', 'challenges', 'accomplishments'].forEach(key => { if (!item[key]) return; const line = document.createElement('p'); line.textContent = `${key[0].toUpperCase()}${key.slice(1)}: ${Array.isArray(item[key]) ? item[key].join(', ') : item[key]}`; article.append(line); });

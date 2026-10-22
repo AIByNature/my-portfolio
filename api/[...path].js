@@ -114,6 +114,13 @@ module.exports = async function handler(req, res) {
     try {
       const body = await parseBody(req);
       if (!body.content || typeof body.content !== 'object' || JSON.stringify(body.content).length > 1_000_000) return send(res, 400, { error: 'Content must be a JSON object under 1 MB.' });
+      const contact = body.content.contact || {};
+      if (contact.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(contact.email))) return send(res, 400, { error: 'Enter a valid contact email address.' });
+      for (const field of ['github', 'linkedin']) {
+        if (!contact[field]) continue;
+        try { const url = new URL(contact[field]); if (!['http:', 'https:'].includes(url.protocol)) throw new Error(); }
+        catch { return send(res, 400, { error: `Enter a valid ${field} URL.` }); }
+      }
       const rows = await supabase('portfolio_content?key=eq.main&select=published');
       const previous = rows?.[0]?.published || {};
       const update = { key: 'main', draft: body.content, updated_at: new Date().toISOString() };

@@ -46,7 +46,7 @@ The public site still works as a static portfolio when the API is not configured
 1. Create a Supabase project and run [`supabase/schema.sql`](supabase/schema.sql) in its SQL Editor.
 2. In Supabase Project Settings → API Keys, copy the project URL and create/copy a **Secret key** (`sb_secret_...`). For the current project, the URL is `https://uwfhrrgongmtkvefdepj.supabase.co`. Keep the key server-side only. Supabase is moving away from the legacy `service_role` key; the API still accepts it as `SUPABASE_SERVICE_ROLE_KEY` if that is all your project has, while `SUPABASE_SECRET_KEY` is preferred.
 3. Add the values from [`.env.example`](.env.example) to Vercel Project Settings → Environment Variables for Production (and Preview if needed). Set `SUPABASE_SECRET_KEY` to the Supabase Secret key. Do not commit a real `.env` file.
-4. Generate the password hash locally with Node.js. Pick a long unique password, then run this in PowerShell (it prompts without echoing the password):
+4. Generate the password hash locally with Node.js. For first access, enter the initial password you supplied in your setup request. Run this in PowerShell (it prompts without echoing the password):
 
    ```powershell
    $secure = Read-Host 'New admin password' -AsSecureString
