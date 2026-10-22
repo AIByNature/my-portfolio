@@ -51,7 +51,7 @@ function parseBody(req) {
 
 async function supabase(path, options = {}) {
   const base = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!base || !key) throw new Error('Storage is not configured. Add Supabase environment variables.');
   const response = await fetch(`${base.replace(/\/$/, '')}/rest/v1/${path}`, {
     ...options,
@@ -130,7 +130,8 @@ module.exports = async function handler(req, res) {
       const key = `portfolio/${crypto.randomUUID()}.${ext}`;
       const base = process.env.SUPABASE_URL;
       const bucket = process.env.SUPABASE_STORAGE_BUCKET || 'portfolio-assets';
-      const uploaded = await fetch(`${base.replace(/\/$/, '')}/storage/v1/object/${bucket}/${key}`, { method: 'POST', headers: { apikey: process.env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`, 'Content-Type': type, 'x-upsert': 'false' }, body: bytes });
+      const storageKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+      const uploaded = await fetch(`${base.replace(/\/$/, '')}/storage/v1/object/${bucket}/${key}`, { method: 'POST', headers: { apikey: storageKey, Authorization: `Bearer ${storageKey}`, 'Content-Type': type, 'x-upsert': 'false' }, body: bytes });
       if (!uploaded.ok) throw new Error(`File storage failed (${uploaded.status})`);
       return send(res, 200, { url: `${base.replace(/\/$/, '')}/storage/v1/object/public/${bucket}/${key}`, name: String(name || '').slice(0, 160) });
     } catch (error) { return send(res, 503, { error: error.message }); }
