@@ -5,7 +5,7 @@ const menuToggle = document.getElementById("menuToggle");
 const navBackdrop = document.getElementById("navBackdrop");
 
 // Update this list as your experience grows. Use only the three honest status labels.
-const skillsGrowthData = [
+let skillsGrowthData = [
   {
     name: "Canva and Digital Design",
     status: "Comfortable",
@@ -85,6 +85,12 @@ function renderSkillsGrowthMap() {
 }
 
 renderSkillsGrowthMap();
+window.addEventListener("portfolio:content", event => {
+  const data = event.detail?.skills;
+  if (!Array.isArray(data)) return;
+  skillsGrowthData = data.filter(item => item && typeof item.name === "string").map(item => ({ name: item.name, status: item.status || "Developing", icon: item.icon || "✳", abilities: Array.isArray(item.abilities) ? item.abilities : (item.description ? [item.description] : []) }));
+  renderSkillsGrowthMap();
+});
 
 const skillsViewport = document.getElementById("skillsCarouselViewport");
 const skillsTrack = document.getElementById("skillsGrowthMap");
@@ -234,6 +240,12 @@ const profileCards = [
   { src: "assets/profile-5.jpg", alt: "Profile photo 5", role: "IT Student · Multimedia", description: "" },
   { src: "assets/profile-6.jpg", alt: "Profile photo 6", role: "IT Student · Multimedia", description: "" }
 ];
+window.addEventListener("portfolio:content", event => {
+  const home = event.detail?.home;
+  if (!home || !Array.isArray(home.profileImages)) return;
+  profileCards.splice(0, profileCards.length, ...home.profileImages.filter(item => item && item.src).map(item => ({ src: item.src, alt: item.alt || "Profile photo", role: item.role || home.professionalTitle || "IT Student · Multimedia", description: item.description || "" })));
+  buildProfilePagination(); renderProfileCarousel(0);
+});
 const profileCarousel = document.getElementById("profileCarousel");
 const profileCounter = document.getElementById("profileCounter");
 const profileTrack = document.getElementById("profileTrack");
