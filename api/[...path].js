@@ -30,14 +30,15 @@ function publicOnly(value) {
   return Object.fromEntries(Object.entries(value).filter(([key]) => key !== 'draft').map(([key, item]) => [key, publicOnly(item)]));
 }
 
-function validSession(req) {
+function sessionExpiry(req) {
   const secret = process.env.SESSION_SECRET;
   const raw = cookieValue(req, 'portfolio_admin');
-  if (!secret || !raw) return false;
+  if (!secret || !raw) return 0;
   const [payload, signature] = raw.split('.');
-  if (!payload || !signature || !safeEqual(signature, sign(payload, secret))) return false;
-  try { return JSON.parse(Buffer.from(payload, 'base64url').toString()).exp > Date.now(); } catch { return false; }
+  if (!payload || !signature || !safeEqual(signature, sign(payload, secret))) return 0;
+  try { const exp = JSON.parse(Buffer.from(payload, 'base64url').toString()).exp; return Number.isFinite(exp) ? exp : 0; } catch { return 0; }
 }
+function validSession(req) { return sessionExpiry(req) > Date.now(); }
 
 function parseBody(req) {
   if (req.body && typeof req.body === 'object') return Promise.resolve(req.body);
@@ -100,13 +101,13 @@ module.exports = async function handler(req, res) {
       attempts.delete(ip);
       const payload = Buffer.from(JSON.stringify({ exp: now + SESSION_SECONDS * 1000 })).toString('base64url');
       const token = `${payload}.${sign(payload, process.env.SESSION_SECRET)}`;
-      return send(res, 200, { ok: true }, { 'Set-Cookie': `portfolio_admin=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${SESSION_SECONDS}` });
+      return send(res, 200, { ok: true, expiresAt: now + SESSION_SECONDS * 1000 }, { 'Set-Cookie': `portfolio_admin=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${SESSION_SECONDS}` });
     } catch (error) { return send(res, 400, { error: error.message }); }
   }
   if (req.method === 'POST' && route === 'logout') return send(res, 200, { ok: true }, { 'Set-Cookie': 'portfolio_admin=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0' });
   if (!validSession(req)) return send(res, 401, { error: 'Authentication required.' });
   if (req.method === 'GET' && route === 'admin/content') {
-    try { const rows = await supabase('portfolio_content?key=eq.main&select=draft,published,updated_at'); return send(res, 200, rows?.[0] || { draft: {}, published: {}, updated_at: null }, { 'Cache-Control': 'no-store' }); }
+    try { const rows = await supabase('portfolio_content?key=eq.main&select=draft,published,updated_at'); return send(res, 200, { ...(rows?.[0] || { draft: {}, published: {}, updated_at: null }), sessionExpiresAt: sessionExpiry(req) }, { 'Cache-Control': 'no-store' }); }
     catch (error) { return send(res, 503, { error: error.message }); }
   }
   if (req.method === 'PUT' && route === 'admin/content') {

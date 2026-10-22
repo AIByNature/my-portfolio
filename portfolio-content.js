@@ -7,7 +7,7 @@
     const root = document.querySelector('#experience .timeline'); if (!root || !Array.isArray(items)) return;
     root.replaceChildren(...items.filter(item => item && item.published !== false).map(item => {
       const article = document.createElement('article'); article.className = 'timeline-item';
-      const date = document.createElement('div'); date.className = 'timeline-date'; date.textContent = item.dates || item.date || '';
+      const date = document.createElement('div'); date.className = 'timeline-date'; date.textContent = item.dates || ([item.startDate,item.endDate||(item.current?'Present':'')].filter(Boolean).join(' — ')) || item.date || '';
       const marker = document.createElement('div'); marker.className = 'timeline-marker';
       const content = document.createElement('div'); content.className = 'timeline-content';
       const kicker = document.createElement('span'); kicker.className = 'card-kicker'; kicker.textContent = item.organization || item.category || 'EXPERIENCE';
@@ -21,7 +21,8 @@
   }
   function renderProjects(items) {
     const root = document.querySelector('#projects .projects-grid'); if (!root || !Array.isArray(items)) return;
-    root.replaceChildren(...items.filter(item => item && item.published !== false).map((item, index) => {
+    const projectItems=items.filter(item=>item&&item.published!==false).map((item,index)=>({item,index})).sort((a,b)=>Number(Boolean(b.item.featured))-Number(Boolean(a.item.featured))||a.index-b.index).map(entry=>entry.item);
+    root.replaceChildren(...projectItems.map((item, index) => {
       const card = document.createElement('article'); card.className = 'project-card';
       const visual = document.createElement('div'); visual.className = 'project-visual visual-olive';
       if (item.image && safeLink(item.image)) { const image = document.createElement('img'); image.src = safeLink(item.image); image.alt = item.title ? `${item.title} thumbnail` : 'Project image'; image.loading = 'lazy'; visual.append(image); }
@@ -29,6 +30,7 @@
       const titleVisual = document.createElement('div'); titleVisual.className = 'visual-word'; titleVisual.textContent = item.title || 'PROJECT'; visual.append(number, titleVisual);
       const info = document.createElement('div'); info.className = 'project-info';
       const category = document.createElement('div'); category.className = 'project-type'; category.textContent = item.category || 'PROJECT';
+      if(item.featured){const featured=document.createElement('span');featured.className='project-featured';featured.textContent='FEATURED';info.append(featured);}
       const title = document.createElement('h3'); title.textContent = item.title || '';
       const description = document.createElement('p'); description.textContent = item.description || '';
       info.append(category, title, description);
@@ -50,9 +52,22 @@
       const description = document.createElement('p'); description.textContent = item.description || '';
       article.append(heading, description);
       ['tasks', 'skills', 'challenges', 'accomplishments'].forEach(key => { if (!item[key]) return; const line = document.createElement('p'); line.textContent = `${key[0].toUpperCase()}${key.slice(1)}: ${Array.isArray(item[key]) ? item[key].join(', ') : item[key]}`; article.append(line); });
+      if(item.reflections){const reflection=document.createElement('p');reflection.textContent=`Reflection: ${item.reflections}`;article.append(reflection);}
       if (Array.isArray(item.photos)) { const gallery = document.createElement('div'); gallery.className = 'ojt-report-photos'; item.photos.forEach(photo => { const figure = document.createElement('figure'); const image = document.createElement('img'); image.src = safeLink(typeof photo === 'string' ? photo : photo.url); image.alt = typeof photo === 'string' ? '' : (photo.caption || 'OJT activity photo'); image.loading = 'lazy'; figure.append(image); if (photo.caption) { const caption = document.createElement('figcaption'); caption.textContent = photo.caption; figure.append(caption); } gallery.append(figure); }); article.append(gallery); }
       addLink(article, 'Open report ↗', item.documentUrl); root.append(article);
     });
+  }
+  function renderCertificates(items) {
+    const root=document.getElementById('achievementGrid');if(!root||!Array.isArray(items))return;
+    const visible=items.filter(item=>item&&item.published!==false);root.replaceChildren();
+    if(!visible.length){const empty=document.createElement('p');empty.className='content-empty';empty.textContent='Published certificates and achievements will appear here.';root.append(empty);return;}
+    visible.forEach(item=>{const card=document.createElement('article');card.className='achievement-card';const title=document.createElement('h3');title.textContent=item.title||'Achievement';const meta=document.createElement('div');meta.className='achievement-meta';meta.textContent=[item.issuer,item.date].filter(Boolean).join(' · ');const description=document.createElement('p');description.textContent=item.description||'';card.append(meta,title,description);if(item.image&&safeLink(item.image)){const image=document.createElement('img');image.src=safeLink(item.image);image.alt=`${item.title||'Certificate'} image`;image.loading='lazy';card.append(image);}addLink(card,'View certificate ↗',item.documentUrl);root.append(card);});
+  }
+  function renderGallery(items) {
+    const root=document.getElementById('portfolioGallery');if(!root||!Array.isArray(items))return;
+    const visible=items.filter(item=>item&&item.published!==false&&item.image&&safeLink(item.image));root.replaceChildren();
+    if(!visible.length){const empty=document.createElement('p');empty.className='content-empty';empty.textContent='Published gallery items will appear here.';root.append(empty);return;}
+    visible.forEach(item=>{const figure=document.createElement('figure');const image=document.createElement('img');image.src=safeLink(item.image);image.alt=item.title||item.category||'Portfolio gallery image';image.loading='lazy';const caption=document.createElement('figcaption');caption.textContent=item.title||item.description||'';figure.append(image,caption);if(item.category){const category=document.createElement('span');category.className='gallery-category';category.textContent=item.category;figure.append(category);}root.append(figure);});
   }
   function apply(data) {
     if (!data || typeof data !== 'object') return;
@@ -70,19 +85,24 @@
     if (Array.isArray(about.paragraphs)) { const root = document.querySelector('.about-copy'); if (root) { root.querySelectorAll(':scope > p').forEach(node => node.remove()); const factList = root.querySelector('.fact-list'); about.paragraphs.forEach(value => { const p = document.createElement('p'); p.textContent = value; root.insertBefore(p, factList); }); } }
     if (about.education) text('.fact-list div strong', about.education);
     if (about.university) text('.fact-list div:nth-child(2) strong', about.university);
-    renderExperience(data.experience); renderProjects(data.projects); renderOjt(data.ojt);
+    const settings = data.settings || {};
+    const featuredIds=new Set(Array.isArray(settings.featuredProjects)?settings.featuredProjects:[]);
+    const projects=Array.isArray(data.projects)?data.projects.map(item=>featuredIds.has(item.id)?{...item,featured:true}:item):data.projects;
+    renderExperience(data.experience); renderProjects(projects); renderOjt(data.ojt); renderCertificates(data.certificates); renderGallery(data.gallery);
     const contact = { ...(data.home?.socialLinks || {}), ...(data.contact || {}) };
     text('#contact .section-intro', contact.contactText);
     if (contact.email) { const link = document.querySelector('.contact-row a[href^="mailto:"]'); if (link) { link.href = `mailto:${contact.email}`; link.textContent = `${contact.email} ↗`; } const copy = document.getElementById('copyEmail'); if (copy) copy.dataset.email = contact.email; }
     const externalLinks = [...document.querySelectorAll('.contact-row a')];
     [['github', 1], ['linkedin', 2]].forEach(([key, index]) => { if (contact[key] && externalLinks[index]) { externalLinks[index].href = safeLink(contact[key]); externalLinks[index].textContent = `${contact[key].replace(/^https?:\/\//, '')} ↗`; } });
     if(Array.isArray(contact.otherLinks)){const card=document.querySelector('.contact-card');contact.otherLinks.forEach(item=>{if(!item?.label)return;const row=document.createElement('div');row.className='contact-row';const name=document.createElement('span');name.textContent=String(item.label).toUpperCase();row.append(name);addLink(row,item.label+' ↗',item.url);card?.insertBefore(row,card.querySelector('.contact-hint'));});}
-    const settings = data.settings || {};
+    if(home.resumeLink){const card=document.querySelector('.contact-card');addLink(card,'Resume / CV ↗',home.resumeLink);}
     if (settings.pageTitle) document.title=settings.pageTitle;
     if (settings.metaDescription) document.querySelector('meta[name="description"]')?.setAttribute('content',settings.metaDescription);
     if (settings.footerText) text('.footer > span:last-of-type', settings.footerText);
     if (settings.favicon) { let icon = document.querySelector('link[rel="icon"]'); if (!icon) { icon = document.createElement('link'); icon.rel='icon'; document.head.append(icon); } icon.href=safeLink(settings.favicon); }
-    if (settings.sectionVisibility && typeof settings.sectionVisibility === 'object') Object.entries(settings.sectionVisibility).forEach(([id,visible])=>{const section=document.getElementById(id);const nav=document.querySelector(`.nav-tab[data-page="${id}"]`);if(section)section.hidden=visible===false;if(nav)nav.hidden=visible===false;});
+    if (settings.sectionVisibility && typeof settings.sectionVisibility === 'object') Object.entries(settings.sectionVisibility).forEach(([id,visible])=>{const section=document.getElementById(id);const nav=document.querySelector(`.nav-tab[data-page="${id}"]`);if(section){section.hidden=visible===false;section.style.display=visible===false?'none':'';}if(nav)nav.hidden=visible===false;});
+    const colors=settings.themeColors||{};const colorVariables={olive:'--olive',lightOlive:'--olive2',brown:'--brown',beige:'--sand',darkGray:'--ink',cream:'--paper'};Object.entries(colorVariables).forEach(([key,variable])=>{if(typeof colors[key]==='string'&&/^#[\da-f]{6}$/i.test(colors[key]))document.documentElement.style.setProperty(variable,colors[key]);});
+    if(settings.backgroundImage&&safeLink(settings.backgroundImage)){document.body.style.backgroundImage=`url("${safeLink(settings.backgroundImage)}")`;document.body.style.backgroundAttachment='fixed';document.body.style.backgroundSize='cover';}
     window.dispatchEvent(new CustomEvent('portfolio:content', { detail: data }));
   }
   const isPreview = new URLSearchParams(location.search).get('portfolioPreview') === '1';

@@ -44,7 +44,7 @@ The public site still works as a static portfolio when the API is not configured
 ### Configure Supabase
 
 1. Create a Supabase project and run [`supabase/schema.sql`](supabase/schema.sql) in its SQL Editor.
-2. In Supabase Project Settings → API Keys, copy the project URL and create/copy a **Secret key** (`sb_secret_...`). Keep this key server-side only. Supabase is moving away from the legacy `service_role` key; the API still accepts it as `SUPABASE_SERVICE_ROLE_KEY` if that is all your project has, while `SUPABASE_SECRET_KEY` is preferred.
+2. In Supabase Project Settings → API Keys, copy the project URL and create/copy a **Secret key** (`sb_secret_...`). For the current project, the URL is `https://uwfhrrgongmtkvefdepj.supabase.co`. Keep the key server-side only. Supabase is moving away from the legacy `service_role` key; the API still accepts it as `SUPABASE_SERVICE_ROLE_KEY` if that is all your project has, while `SUPABASE_SECRET_KEY` is preferred.
 3. Add the values from [`.env.example`](.env.example) to Vercel Project Settings → Environment Variables for Production (and Preview if needed). Set `SUPABASE_SECRET_KEY` to the Supabase Secret key. Do not commit a real `.env` file.
 4. Generate the password hash locally with Node.js. Pick a long unique password, then run this in PowerShell (it prompts without echoing the password):
 
@@ -59,7 +59,7 @@ The public site still works as a static portfolio when the API is not configured
 
 ### Edit and publish
 
-Open `https://your-domain.example/admin`, enter the configured password, and choose a section. Use the labeled fields to add and edit content, reorder list entries, save private drafts, preview unpublished changes, or publish to the public website. Complex photo galleries and settings remain JSON fields. Supported fields include:
+Open `https://your-domain.example/admin` or select **Admin Panel** in the public navigation, enter the configured password, and choose a section. The login screen has a cancel link back to the portfolio. Use the labeled fields to add and edit content, reorder list entries, save private drafts, preview unpublished changes, or publish to the public website. Complex photo galleries and settings remain JSON fields. Supported fields include:
 
 - `home`: `displayName`, `professionalTitle`, `heroTitle`, `tagline`, `welcomeMessage`, `profileImages` (array of `{ "src", "alt", "role" }`), `metaDescription`, `pageTitle`.
 - `about`: `introduction`, `paragraphs` (array), `education`.
@@ -67,12 +67,15 @@ Open `https://your-domain.example/admin`, enter the configured password, and cho
 - `experience`: array of `{ "dates", "organization", "title", "description" }`.
 - `projects`: array of `{ "title", "category", "description", "tools", "image", "repository", "liveUrl", "demoUrl" }`.
 - `ojt`: array of `{ "week", "date", "title", "description", "tasks", "skills", "challenges", "accomplishments", "photos": [{ "url", "caption" }], "documentUrl" }`.
+- `certificates`: array of `{ "title", "issuer", "date", "description", "image", "documentUrl" }`.
+- `gallery`: array of `{ "title", "category", "description", "image", "date" }`.
 - `contact`: `email`, `github`, and `linkedin`.
+- `settings`: `pageTitle`, `metaDescription`, `favicon`, `footerText`, `themeColors` (hex values), `backgroundImage`, `featuredProjects`, and `sectionVisibility`.
 
 Upload an asset in the dashboard; its public URL is copied for use in a section's JSON. JPG, PNG, WebP, GIF, and PDF are accepted up to 4 MB. Public assets are readable by visitors. Log out to end the browser session. Change the password by replacing `ADMIN_PASSWORD_HASH` in Vercel and redeploying.
 
 ### Deployment checklist and current limits
 
-Import the existing repository into Vercel as a static project; no build command is needed. Vercel serves the `api/` functions automatically. After configuring Supabase and Vercel variables, check that wrong passwords are rejected, admin content/upload requests without a session return 401, saving a draft does not change `/api/content`, publishing updates the public page, reload retains published content, and logout blocks admin API calls.
+Import the existing repository into Vercel as a static project; no build command is needed. Vercel serves the `api/` functions automatically. After configuring Supabase and Vercel variables, check that the burger-menu Admin Panel opens the password screen, cancel returns to the portfolio, wrong passwords are rejected, admin content/upload requests without a session return 401, saving a draft does not change `/api/content`, preview shows draft entries, publishing updates the public page, uploaded files remain available, session expiry requires sign-in again, and logout returns to the portfolio and blocks admin API calls.
 
 Login throttling uses serverless-instance memory. For multiple function instances, also enable Vercel Firewall rate limiting for `/api/login`; the in-function lockout is best effort across instances. Long descriptions use labeled plain-text areas rather than a rich-text/WYSIWYG editor.
