@@ -39,7 +39,7 @@ To add attendance, add one object per source row to `dutyRecords`, using the fie
 
 ## Private portfolio editor (Vercel + Supabase)
 
-The public site still works as a static portfolio when the API is not configured. On Vercel, `/admin` provides password login and draft/publish editing. The public site reads only the `published` JSON document from `/api/content`; drafts are available only from the authenticated admin endpoint. The dashboard edits each section as JSON so lists such as skills, projects, experience, and OJT reports can be managed without changing site source files.
+The public site still works as a static portfolio when the API is not configured. On Vercel, `/admin` provides password login, an overview, labeled content forms, draft/publish editing, entry reordering, upload support, and a private preview window. The public site reads only the `published` JSON document from `/api/content`; drafts are available only from the authenticated admin endpoint. Skills, experience, projects, and OJT reports are managed as editable entries without changing site source files.
 
 ### Configure Supabase
 
@@ -59,7 +59,7 @@ The public site still works as a static portfolio when the API is not configured
 
 ### Edit and publish
 
-Open `https://your-domain.example/admin`, enter the configured password, and choose a section. Each section is a JSON object; save draft to keep it private, or publish to update the public version. Supported fields include:
+Open `https://your-domain.example/admin`, enter the configured password, and choose a section. Use the labeled fields to add and edit content, reorder list entries, save private drafts, preview unpublished changes, or publish to the public website. Complex photo galleries and settings remain JSON fields. Supported fields include:
 
 - `home`: `displayName`, `professionalTitle`, `heroTitle`, `tagline`, `welcomeMessage`, `profileImages` (array of `{ "src", "alt", "role" }`), `metaDescription`, `pageTitle`.
 - `about`: `introduction`, `paragraphs` (array), `education`.
@@ -75,4 +75,4 @@ Upload an asset in the dashboard; its public URL is copied for use in a section'
 
 Import the existing repository into Vercel as a static project; no build command is needed. Vercel serves the `api/` functions automatically. After configuring Supabase and Vercel variables, check that wrong passwords are rejected, admin content/upload requests without a session return 401, saving a draft does not change `/api/content`, publishing updates the public page, reload retains published content, and logout blocks admin API calls.
 
-Login throttling uses serverless-instance memory. For multiple function instances, also enable Vercel Firewall rate limiting for `/api/login`; the in-function lockout is best effort across instances. The editor uses JSON instead of rich-text forms, and there is no preview mode yet.
+Login throttling uses serverless-instance memory. For multiple function instances, also enable Vercel Firewall rate limiting for `/api/login`; the in-function lockout is best effort across instances. Long descriptions use labeled plain-text areas rather than a rich-text/WYSIWYG editor.

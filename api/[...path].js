@@ -49,13 +49,24 @@ function parseBody(req) {
   });
 }
 
+function readFile(req, limit) {
+  return new Promise((resolve, reject) => {
+    const chunks = []; let size = 0; let overflow = false;
+    req.on('data', chunk => { size += chunk.length; if (size > limit) { overflow = true; chunks.length = 0; return; } if (!overflow) chunks.push(chunk); });
+    req.on('end', () => overflow ? reject(new Error('Files must be 4 MB or smaller.')) : resolve(Buffer.concat(chunks)));
+    req.on('error', reject);
+  });
+}
+
 async function supabase(path, options = {}) {
   const base = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!base || !key) throw new Error('Storage is not configured. Add Supabase environment variables.');
+  const authHeaders = { apikey: key, 'Content-Type': 'application/json' };
+  if (!key.startsWith('sb_')) authHeaders.Authorization = `Bearer ${key}`;
   const response = await fetch(`${base.replace(/\/$/, '')}/rest/v1/${path}`, {
     ...options,
-    headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', ...(options.headers || {}) },
+    headers: { ...authHeaders, ...(options.headers || {}) },
   });
   if (!response.ok) throw new Error(`Database request failed (${response.status})`);
   return response.status === 204 ? null : response.json();
@@ -66,7 +77,7 @@ module.exports = async function handler(req, res) {
   if (req.method === 'GET' && route === 'content') {
     try {
       const rows = await supabase('portfolio_content?key=eq.main&select=published');
-      return send(res, 200, publicOnly(rows?.[0]?.published || {}));
+      return send(res, 200, publicOnly(rows?.[0]?.published || {}), { 'Cache-Control': 'no-store' });
     } catch (error) { return send(res, 503, { error: error.message }); }
   }
   if (req.method === 'POST' && route === 'login') {
@@ -95,7 +106,7 @@ module.exports = async function handler(req, res) {
   if (req.method === 'POST' && route === 'logout') return send(res, 200, { ok: true }, { 'Set-Cookie': 'portfolio_admin=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0' });
   if (!validSession(req)) return send(res, 401, { error: 'Authentication required.' });
   if (req.method === 'GET' && route === 'admin/content') {
-    try { const rows = await supabase('portfolio_content?key=eq.main&select=draft,published'); return send(res, 200, rows?.[0] || { draft: {}, published: {} }); }
+    try { const rows = await supabase('portfolio_content?key=eq.main&select=draft,published,updated_at'); return send(res, 200, rows?.[0] || { draft: {}, published: {}, updated_at: null }, { 'Cache-Control': 'no-store' }); }
     catch (error) { return send(res, 503, { error: error.message }); }
   }
   if (req.method === 'PUT' && route === 'admin/content') {
@@ -113,11 +124,11 @@ module.exports = async function handler(req, res) {
   }
   if (req.method === 'POST' && route === 'admin/upload') {
     try {
-      const { name, type, data } = await parseBody(req);
+      const type = String(req.headers['content-type'] || '').split(';')[0].toLowerCase();
       const allowed = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf']);
-      if (!allowed.has(type) || typeof data !== 'string' || data.length > 5_500_000) return send(res, 400, { error: 'Upload a JPG, PNG, WebP, GIF, or PDF up to 4 MB.' });
-      const bytes = Buffer.from(data, 'base64');
-      if (bytes.length > 4 * 1024 * 1024) return send(res, 400, { error: 'Files must be 4 MB or smaller.' });
+      if (!allowed.has(type)) return send(res, 400, { error: 'Upload a JPG, PNG, WebP, GIF, or PDF up to 4 MB.' });
+      const bytes = await readFile(req, 4 * 1024 * 1024);
+      if (!bytes.length) return send(res, 400, { error: 'The selected file is empty.' });
       const signatures = {
         'image/jpeg': bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff,
         'image/png': bytes.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])),
@@ -131,10 +142,16 @@ module.exports = async function handler(req, res) {
       const base = process.env.SUPABASE_URL;
       const bucket = process.env.SUPABASE_STORAGE_BUCKET || 'portfolio-assets';
       const storageKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
-      const uploaded = await fetch(`${base.replace(/\/$/, '')}/storage/v1/object/${bucket}/${key}`, { method: 'POST', headers: { apikey: storageKey, Authorization: `Bearer ${storageKey}`, 'Content-Type': type, 'x-upsert': 'false' }, body: bytes });
+      const storageHeaders = { apikey: storageKey, 'Content-Type': type, 'x-upsert': 'false' };
+      if (!storageKey.startsWith('sb_')) storageHeaders.Authorization = `Bearer ${storageKey}`;
+      const uploaded = await fetch(`${base.replace(/\/$/, '')}/storage/v1/object/${bucket}/${key}`, { method: 'POST', headers: storageHeaders, body: bytes });
       if (!uploaded.ok) throw new Error(`File storage failed (${uploaded.status})`);
-      return send(res, 200, { url: `${base.replace(/\/$/, '')}/storage/v1/object/public/${bucket}/${key}`, name: String(name || '').slice(0, 160) });
+      let name = '';
+      try { name = decodeURIComponent(String(req.headers['x-file-name'] || '')); } catch { name = ''; }
+      return send(res, 200, { url: `${base.replace(/\/$/, '')}/storage/v1/object/public/${bucket}/${key}`, name: name.slice(0, 160) });
     } catch (error) { return send(res, 503, { error: error.message }); }
   }
   return send(res, 404, { error: 'Not found.' });
 };
+
+module.exports.config = { api: { bodyParser: false } };

@@ -13,7 +13,10 @@
       const kicker = document.createElement('span'); kicker.className = 'card-kicker'; kicker.textContent = item.organization || item.category || 'EXPERIENCE';
       const title = document.createElement('h3'); title.textContent = item.title || item.role || '';
       const description = document.createElement('p'); description.textContent = item.description || '';
-      content.append(kicker, title, description); article.append(date, marker, content); return article;
+      content.append(kicker, title, description);
+      if(item.image&&safeLink(item.image)){const image=document.createElement('img');image.src=safeLink(item.image);image.alt=item.title?`${item.title} photo`:'';image.loading='lazy';image.className='experience-image';content.append(image);}
+      addLink(content,'Supporting document ↗',item.documentUrl);
+      article.append(date, marker, content); return article;
     }));
   }
   function renderProjects(items) {
@@ -21,7 +24,7 @@
     root.replaceChildren(...items.filter(item => item && item.published !== false).map((item, index) => {
       const card = document.createElement('article'); card.className = 'project-card';
       const visual = document.createElement('div'); visual.className = 'project-visual visual-olive';
-      if (item.image) { const image = document.createElement('img'); image.src = safeLink(item.image); image.alt = item.title ? `${item.title} thumbnail` : 'Project image'; image.loading = 'lazy'; visual.append(image); }
+      if (item.image && safeLink(item.image)) { const image = document.createElement('img'); image.src = safeLink(item.image); image.alt = item.title ? `${item.title} thumbnail` : 'Project image'; image.loading = 'lazy'; visual.append(image); }
       const number = document.createElement('span'); number.textContent = String(index + 1).padStart(2, '0');
       const titleVisual = document.createElement('div'); titleVisual.className = 'visual-word'; titleVisual.textContent = item.title || 'PROJECT'; visual.append(number, titleVisual);
       const info = document.createElement('div'); info.className = 'project-info';
@@ -31,6 +34,7 @@
       info.append(category, title, description);
       const tags = document.createElement('div'); tags.className = 'tags';
       (Array.isArray(item.tools) ? item.tools : Array.isArray(item.technologies) ? item.technologies : []).forEach(label => { const tag = document.createElement('span'); tag.textContent = label; tags.append(tag); }); info.append(tags);
+      if(Array.isArray(item.gallery)&&item.gallery.length){const gallery=document.createElement('div');gallery.className='project-gallery';item.gallery.forEach((url,i)=>{const href=safeLink(url);if(!href)return;const image=document.createElement('img');image.src=href;image.alt=`${item.title||'Project'} gallery image ${i+1}`;image.loading='lazy';gallery.append(image);});info.append(gallery);}
       addLink(info, 'Repository ↗', item.repository); addLink(info, 'Live project ↗', item.liveUrl); addLink(info, 'Demonstration ↗', item.demoUrl);
       card.append(visual, info); return card;
     }));
@@ -57,16 +61,35 @@
     if (home.displayName) { const brand = document.querySelector('.brand'); if (brand?.lastElementChild) brand.lastElementChild.firstChild.textContent = home.displayName.toUpperCase(); document.title = `${home.displayName} — Portfolio`; }
     if (home.pageTitle) document.title = home.pageTitle;
     if (home.metaDescription) document.querySelector('meta[name="description"]')?.setAttribute('content', home.metaDescription);
+    if(Array.isArray(home.buttons)){const root=document.querySelector('.hero-actions');home.buttons.slice(0,2).forEach((item,index)=>{const current=root?.children[index];if(!current||!item)return;const label=item.label||current.textContent.trim();if(item.destination&&item.destination.startsWith('#')){current.dataset.go=item.destination.slice(1);current.textContent=label;}else{const href=safeLink(item.destination);if(!href)return;const anchor=document.createElement('a');anchor.className=current.className;anchor.href=href;anchor.textContent=label;if(href.startsWith('http')){anchor.target='_blank';anchor.rel='noreferrer';}current.replaceWith(anchor);}});}
+    if (home.profileImage && !Array.isArray(home.profileImages)) window.dispatchEvent(new CustomEvent('portfolio:content', { detail: { ...data, home: { ...home, profileImages: [{ src: home.profileImage, alt: home.displayName || 'Profile photo' }] } } }));
     const about = data.about || {};
     text('#about .section-intro', about.introduction);
+    if(about.professionalGoals){const root=document.querySelector('.about-copy');if(root){let goals=root.querySelector('.professional-goals');if(!goals){goals=document.createElement('p');goals.className='professional-goals';root.insertBefore(goals,root.querySelector('.fact-list'));}goals.textContent=about.professionalGoals;}}
+    if(about.image&&safeLink(about.image)){let image=document.getElementById('aboutPortrait');if(!image){image=document.createElement('img');image.id='aboutPortrait';image.className='about-portrait';image.alt='About profile';document.querySelector('.about-copy')?.prepend(image);}image.src=safeLink(about.image);}
     if (Array.isArray(about.paragraphs)) { const root = document.querySelector('.about-copy'); if (root) { root.querySelectorAll(':scope > p').forEach(node => node.remove()); const factList = root.querySelector('.fact-list'); about.paragraphs.forEach(value => { const p = document.createElement('p'); p.textContent = value; root.insertBefore(p, factList); }); } }
     if (about.education) text('.fact-list div strong', about.education);
+    if (about.university) text('.fact-list div:nth-child(2) strong', about.university);
     renderExperience(data.experience); renderProjects(data.projects); renderOjt(data.ojt);
-    const contact = data.contact || {};
+    const contact = { ...(data.home?.socialLinks || {}), ...(data.contact || {}) };
+    text('#contact .section-intro', contact.contactText);
     if (contact.email) { const link = document.querySelector('.contact-row a[href^="mailto:"]'); if (link) { link.href = `mailto:${contact.email}`; link.textContent = `${contact.email} ↗`; } const copy = document.getElementById('copyEmail'); if (copy) copy.dataset.email = contact.email; }
     const externalLinks = [...document.querySelectorAll('.contact-row a')];
     [['github', 1], ['linkedin', 2]].forEach(([key, index]) => { if (contact[key] && externalLinks[index]) { externalLinks[index].href = safeLink(contact[key]); externalLinks[index].textContent = `${contact[key].replace(/^https?:\/\//, '')} ↗`; } });
+    if(Array.isArray(contact.otherLinks)){const card=document.querySelector('.contact-card');contact.otherLinks.forEach(item=>{if(!item?.label)return;const row=document.createElement('div');row.className='contact-row';const name=document.createElement('span');name.textContent=String(item.label).toUpperCase();row.append(name);addLink(row,item.label+' ↗',item.url);card?.insertBefore(row,card.querySelector('.contact-hint'));});}
+    const settings = data.settings || {};
+    if (settings.pageTitle) document.title=settings.pageTitle;
+    if (settings.metaDescription) document.querySelector('meta[name="description"]')?.setAttribute('content',settings.metaDescription);
+    if (settings.footerText) text('.footer > span:last-of-type', settings.footerText);
+    if (settings.favicon) { let icon = document.querySelector('link[rel="icon"]'); if (!icon) { icon = document.createElement('link'); icon.rel='icon'; document.head.append(icon); } icon.href=safeLink(settings.favicon); }
+    if (settings.sectionVisibility && typeof settings.sectionVisibility === 'object') Object.entries(settings.sectionVisibility).forEach(([id,visible])=>{const section=document.getElementById(id);const nav=document.querySelector(`.nav-tab[data-page="${id}"]`);if(section)section.hidden=visible===false;if(nav)nav.hidden=visible===false;});
     window.dispatchEvent(new CustomEvent('portfolio:content', { detail: data }));
   }
-  fetch('/api/content').then(response => { if (!response.ok) throw new Error('Content unavailable'); return response.json(); }).then(apply).catch(() => { /* Keep the existing portfolio visible if the API is not configured yet. */ });
+  const isPreview = new URLSearchParams(location.search).get('portfolioPreview') === '1';
+  if (isPreview && window.opener && window.opener.location.origin === location.origin) {
+    document.getElementById('portfolioIntro')?.remove();
+    window.addEventListener('message', event => { if (event.source !== window.opener || event.origin !== location.origin || event.data?.type !== 'portfolio-preview') return; apply(event.data.content); }, { once: true });
+  } else {
+    fetch('/api/content').then(response => { if (!response.ok) throw new Error('Content unavailable'); return response.json(); }).then(apply).catch(() => { /* Keep the existing portfolio visible if the API is not configured yet. */ });
+  }
 })();
